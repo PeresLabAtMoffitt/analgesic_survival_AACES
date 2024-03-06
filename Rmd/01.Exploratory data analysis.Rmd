@@ -1,0 +1,435 @@
+---
+title: "Exploratory data analysis"
+author: "Christelle Colin-Leitzinger"
+date: '`r Sys.Date()`'
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: false
+    theme: united
+    highlight: pygments
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+
+<style type= "text/css">
+
+. figure {
+   margin-top: 25px;
+   margin-bottom: 100px;
+}
+
+table {
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      cache = FALSE,
+                      fig.align='center'
+                      )
+```
+
+```{r library}
+library(here)
+library(tidyverse)
+library(labelled)
+library(ggplot2)
+library(ggforce)
+library(gtsummary)
+library(survminer)
+library(survival)
+theme_set(theme_classic())
+theme_gtsummary_compact()
+```
+
+```{r load}
+path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
+analgesics <-
+  read_csv(paste0(here::here(), "/Cleaned analgesics medication data_02152024.csv"))
+```
+
+```{r Labeling}
+var_label(analgesics) <- list(refage = "Patient age", 
+                         stage = "Clinical stage", histotype2 = "Histotype", 
+                         BMI_recent = "BMI (recent)", bmicat = "BMI categories", 
+                         menopause = "Menopause", smokcurrent2 = "Smoking status", 
+                         neoadj_treat = "Received neoadjuvant", 
+                         dblk_imp = "debulking status (imputed)", 
+                         NEW_dblkstat_treat_CA125 = "debulking status", 
+                         CCI_new = "CCI", CCI_new_Cat = "CCI categories",
+                         aspirin = "Aspirin use",
+                         aspirin_duration = "Aspirin duration (months)", 
+                         aspirin_freq = "Aspirin frequency (Number of days per month)", 
+                         aspirin_ind = "Aspirin indication",
+                         nsaid = "Non-aspirin NSAID use", 
+                         nsaid_duration = "Non-aspirin NSAID duration (months)", 
+                         nsaid_freq = "Non-aspirin NSAID frequency (Number of days per month)", 
+                         nsaid_ind = "Non-aspirin NSAID indication",
+                         aceta = "Acetaminophen use", 
+                         acetaminophen_duration = "Acetaminophen duration (months)", 
+                         acetaminophen_freq = "Acetaminophen frequency (Number of days per month)", 
+                         aceta_ind = "Acetaminophen indication")
+
+```
+
+# 1. Clinical table
+```{r}
+analgesics %>% 
+  select(refage, stage, histotype, histotype2,
+         BMI_recent, bmicat, menopause, smokcurrent2, 
+         neoadj_treat, dblk_imp, NEW_dblkstat_treat_CA125, 
+         CCI_new, CCI_new_Cat) %>% 
+  tbl_summary(type = list(
+    neoadj_treat ~ "categorical"
+  )) %>% 
+  bold_labels() %>% add_stat_label()
+```
+
+# 2. Analgesics table
+```{r}
+analgesics %>% 
+  select(aspirin, aspirin_duration, aspirin_freq, aspirin_ind,
+         nsaid, nsaid_duration, nsaid_freq, nsaid_ind,
+         aceta, acetaminophen_duration, acetaminophen_freq, aceta_ind) %>% 
+  tbl_summary(type = list(
+    c(aspirin, nsaid, aceta) ~ "categorical"
+  )) %>% 
+  bold_labels() %>% add_stat_label()
+```
+
+# 3. Plots
+### Aspirin
+```{r}
+analgesics %>% 
+  select(aspirin_duration) %>% 
+  group_by(aspirin_duration) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = aspirin_duration, y = n), 
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = aspirin_duration), 
+           width = 0.5, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+
+analgesics %>% 
+  select(aspirin_freq) %>% 
+  group_by(aspirin_freq) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = aspirin_freq, y = n),
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = aspirin_freq), 
+           width = 0.1, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+```
+
+### NSAID
+```{r}
+analgesics %>% 
+  select(nsaid_duration) %>% 
+  group_by(nsaid_duration) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = nsaid_duration, y = n), 
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = nsaid_duration), 
+           width = 0.5, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+
+analgesics %>% 
+  select(nsaid_freq) %>% 
+  group_by(nsaid_freq) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = nsaid_freq, y = n), 
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = nsaid_freq), 
+           width = 0.1, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+```
+
+### Acetaminophen
+```{r}
+analgesics %>% 
+  select(acetaminophen_duration) %>% 
+  group_by(acetaminophen_duration) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = acetaminophen_duration, y = n), 
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = acetaminophen_duration), 
+           width = 0.5, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+
+analgesics %>% 
+  select(acetaminophen_freq) %>% 
+  group_by(acetaminophen_freq) %>% 
+  mutate(n = n()) %>% 
+  ungroup() %>% 
+  ggplot()+
+  geom_area(aes(x = acetaminophen_freq, y = n), 
+            alpha = 0.5, fill = "grey")+
+  geom_bar(data = analgesics, aes(x = acetaminophen_freq), 
+           width = 0.1, fill = "darkblue")+
+  facet_zoom(ylim = c(0, 10))
+```
+
+## Using Never/Ever group
+### How do the "Ever" groups overlap?
+How many patients received none of the analgesics? `r analgesics %>% filter(aspirin == "No" & nsaid == "No" & aceta == "No") %>% nrow()`
+```{r VennDiagram}
+library(VennDiagram)
+
+aspirin <- analgesics %>% filter(aspirin == "Yes")
+nsaid <- analgesics %>% filter(nsaid == "Yes")
+aceta <- analgesics %>% filter(aceta == "Yes")
+
+# venn.diagram(
+#   x = list(aspirin$suid, 
+#            nsaid$suid,
+#            aceta$suid
+#            ),
+#   category.names = c("Aspirin" , "NSAID", "Acetaminophen"),
+#   filename = 'Patients with Analgesics.png',
+#   disable.logging = TRUE,
+#   output=TRUE,
+#   
+#   # Output features
+#   imagetype="png" ,
+#   height = 1000 , 
+#   width = 1000 , 
+#   resolution = 300,
+#   compression = "lzw",
+#   
+#   # Circles
+#   lwd = 2,
+#   lty = 'blank',
+#   fill = c(viridis::cividis(3)),
+#   margin = 0.2,
+#   
+#   # Numbers
+#   cex = .6,
+#   fontface = "bold",
+#   fontfamily = "sans",
+#   # cat.pos = c(90, 0, 0),
+#   cat.dist = c(0.08, 0.08, 0.04)
+#   # ext.percent = 2
+#   #ext.percent = 5
+# )
+knitr::include_graphics(paste0(here::here(), "/Patients with Analgesics.png"))
+```
+
+## 4. Tables by analgesics
+```{r}
+analgesics %>% 
+  select(refage, stage, histotype, histotype2,
+         BMI_recent, bmicat, menopause, smokcurrent2, 
+         neoadj_treat, dblk_imp, NEW_dblkstat_treat_CA125, 
+         CCI_new, CCI_new_Cat,
+         aspirin, aspirin_duration, aspirin_freq, aspirin_ind,
+         nsaid, nsaid_duration, nsaid_freq, nsaid_ind,
+         aceta, acetaminophen_duration, acetaminophen_freq, aceta_ind) %>% 
+  tbl_summary(by = aspirin,
+              type = list(
+    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05) %>% 
+  modify_caption("**By Aspirin Use** (N = {N})")
+
+analgesics %>% 
+  select(refage, stage, histotype, histotype2,
+         BMI_recent, bmicat, menopause, smokcurrent2, 
+         neoadj_treat, dblk_imp, NEW_dblkstat_treat_CA125, 
+         CCI_new, CCI_new_Cat,
+         aspirin, aspirin_duration, aspirin_freq, aspirin_ind,
+         nsaid, nsaid_duration, nsaid_freq, nsaid_ind,
+         aceta, acetaminophen_duration, acetaminophen_freq, aceta_ind) %>% 
+  tbl_summary(by = nsaid,
+              type = list(
+    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05) %>% 
+  modify_caption("**By NSAID Use** (N = {N})")
+
+analgesics %>% 
+  select(refage, stage, histotype, histotype2,
+         BMI_recent, bmicat, menopause, smokcurrent2, 
+         neoadj_treat, dblk_imp, NEW_dblkstat_treat_CA125, 
+         CCI_new, CCI_new_Cat,
+         aspirin, aspirin_duration, aspirin_freq, aspirin_ind,
+         nsaid, nsaid_duration, nsaid_freq, nsaid_ind,
+         aceta, acetaminophen_duration, acetaminophen_freq, aceta_ind) %>% 
+  tbl_summary(by = aceta,
+              type = list(
+    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05) %>% 
+  modify_caption("**By Acetaminophen Use** (N = {N})")
+```
+
+## 5. Survival
+### KM
+
+<div class = "row">
+<div class = "col-md-4">
+```{r KM, fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aspirin, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ nsaid, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aceta, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+</div>
+
+### Model 1 - adjust for age, study site, stage, and histotype
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site, stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site + stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site + stage + histotype2,
+              data = analgesics)  %>%
+  cox.zph()
+```
+
+### Model 2 - + bmicat, smokcurrent2, CCI_new_Cat (could use continuous + need to ask Alicia) - I don't have physical activity
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site, stage, 
+                              histotype2, 
+                              bmicat, smokcurrent2, CCI_new_Cat) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site + stage + histotype2 +
+                bmicat + smokcurrent2 + CCI_new_Cat,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site + stage + histotype2 +
+                bmicat + smokcurrent2 + CCI_new_Cat,
+              data = analgesics) %>%
+  cox.zph()
+```
+
+### Model 3 - + indication (make group maybe no use, heart disease and others)
+
+
+# 4. Using a cut point - to come
+
+# 5. Stratified analysis by histotype
+
+# 6. Sensitivity analysis adjusting for treatment 
+
+
+
+
+
