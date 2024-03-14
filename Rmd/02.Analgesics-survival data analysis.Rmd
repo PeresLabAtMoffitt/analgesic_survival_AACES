@@ -7,6 +7,7 @@ output:
     toc: true
     toc_float: true
     toc_collapsed: false
+    toc_depth : 4
     theme: united
     highlight: pygments
     df_print: paged
@@ -52,46 +53,52 @@ theme_gtsummary_compact()
 ```{r load}
 path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
 analgesics <-
-  read_rds(paste0(here::here(), "/Cleaned analgesics medication data_03062024.rds"))
+  read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_03132024.rds"))
 ```
 
-```{r Labeling}
+```{r Labeling imputed data}
 var_label(analgesics) <- list(refage = "Patient age", 
-                         stage = "Clinical stage", histotype2 = "Histotype", 
+                         stage = "Clinical stage", imp_stage = "Clinical stage (imputed)", 
+                         histotype2 = "Histotype", 
                          BMI_recent = "BMI (recent)", bmicat_2 = "BMI categories", 
                          menopause = "Menopause", smokcurrent2 = "Smoking status", 
                          neoadj_treat = "Received neoadjuvant", 
-                         dblk_imp = "debulking status (imputed)", 
-                         NEW_dblkstat_treat_CA125 = "debulking status", 
+                         imp_debulking = "Debulking status (imputed)", 
+                         NEW_dblkstat_treat_CA125 = "Debulking status", 
                          CCI_new = "CCI", CCI_new_Cat = "CCI categories",
                          aspirin = "Aspirin use",
                          aspirin_duration = "Aspirin duration (months)", 
+                         aspirin_duration_cat = "Aspirin duration (cat)",
                          aspirin_duration_for_users = "Aspirin duration for users (months)",
                          aspirin_freq = "Aspirin frequency (Number of days per month)", 
+                         aspirin_freq_cat = "Aspirin frequency (cat)",
                          aspirin_freq_for_users = "Aspirin frequency for users (Number of days per month)", 
                          aspirin_ind = "Aspirin indication",
                          nsaid = "Non-aspirin NSAID use", 
                          nsaid_duration = "Non-aspirin NSAID duration (months)", 
+                         nsaid_duration_cat = "Non-aspirin NSAID duration for users (cat)",
                          nsaid_duration_for_users = "Non-aspirin NSAID duration for users (months)", 
                          nsaid_freq = "Non-aspirin NSAID frequency (Number of days per month)", 
+                         nsaid_freq_cat = "Non-aspirin NSAID frequency for users (cat)",
                          nsaid_freq_for_users = "Non-aspirin NSAID frequency for users (Number of days per month)", 
                          nsaid_ind = "Non-aspirin NSAID indication",
                          aceta = "Acetaminophen use", 
                          acetaminophen_duration = "Acetaminophen duration (months)", 
+                         acetaminophen_duration_cat = "Acetaminophen duration (cat)",
                          acetaminophen_duration_for_users = "Acetaminophen duration for users (months)", 
                          acetaminophen_freq = "Acetaminophen frequency (Number of days per month)", 
+                         acetaminophen_freq_cat = "Acetaminophen frequency (cat)",
                          acetaminophen_freq_for_users = "Acetaminophen frequency for users (Number of days per month)", 
                          aceta_ind = "Acetaminophen indication",
                          site_2 = "Study site")
-
 ```
 
 # I. Clinical table
 ```{r Clinical table}
 analgesics %>% 
-  select(refage, stage, histotype, histotype2,
+  select(refage, stage, imp_stage, histotype, histotype2,
          BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, 
+         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking,
          CCI_new, CCI_new_Cat) %>% 
   tbl_summary(type = list(
     neoadj_treat ~ "categorical"),
@@ -104,11 +111,14 @@ analgesics %>%
 ```{r Analgesics table}
 analgesics %>% 
   select(aspirin, starts_with("aspirin_duration"), 
-         starts_with("aspirin_freq"), aspirin_ind,
+         starts_with("aspirin_freq"), 
+         aspirin_ind,
          nsaid, starts_with("nsaid_duration"), 
-         starts_with("nsaid_freq"), nsaid_ind,
+         starts_with("nsaid_freq"), 
+         nsaid_ind,
          aceta, starts_with("acetaminophen_duration"),
-         starts_with("acetaminophen_freq"), aceta_ind) %>% 
+         starts_with("acetaminophen_freq"), 
+         aceta_ind) %>% 
   tbl_summary(type = list(
     c(aspirin, nsaid, aceta) ~ "categorical"),
               statistic=list(all_continuous() ~ "{median} ({min}, {max})"
@@ -340,9 +350,9 @@ analgesics %>%
 ## 1. Tables by analgesics
 ```{r}
 analgesics %>% 
-  select(refage, stage, histotype, histotype2,
+  select(refage, stage, imp_stage, histotype, histotype2,
          BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, NEW_dblkstat_treat_CA125, 
+         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
          CCI_new, CCI_new_Cat,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aspirin,
@@ -355,9 +365,9 @@ analgesics %>%
   modify_caption("**By Aspirin Use** (N = {N})")
 
 analgesics %>% 
-  select(refage, stage, histotype, histotype2,
+  select(refage, stage, imp_stage, histotype, histotype2,
          BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, NEW_dblkstat_treat_CA125, 
+         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
          CCI_new, CCI_new_Cat,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = nsaid,
@@ -370,9 +380,9 @@ analgesics %>%
   modify_caption("**By NSAID Use** (N = {N})")
 
 analgesics %>% 
-  select(refage, stage, histotype, histotype2,
+  select(refage, stage, imp_stage, histotype, histotype2,
          BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, NEW_dblkstat_treat_CA125, 
+         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
          CCI_new, CCI_new_Cat,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aceta,
@@ -387,7 +397,7 @@ analgesics %>%
 
 ## 2. Survival
 ### KM
-
+#### Yes/No
 <div class = "row">
 <div class = "col-md-4">
 ```{r KM, fig.height = 8}
@@ -460,6 +470,226 @@ ggsurvplot(survfit(Surv(os_time, os_event) ~ aceta,
 </div>
 </div>
 
+#### Duration
+<div class = "row">
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aspirin_duration_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ nsaid_duration_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ acetaminophen_duration_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+</div>
+
+#### Frequency
+<div class = "row">
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aspirin_freq_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ nsaid_freq_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ acetaminophen_freq_cat, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+</div>
+
+#### Indication
+<div class = "row">
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aspirin_ind, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ nsaid_ind, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+
+<div class = "col-md-4">
+```{r fig.height = 8}
+ggsurvplot(survfit(Surv(os_time, os_event) ~ aceta_ind, 
+                   data=analgesics),
+           title = "OS Analysis",
+           font.main = c(20, "bold", "black"),
+           font.x = c(18, "bold", "black"),
+           font.y = c(18, "bold", "black"),
+           font.legend = c(16, "black"),
+           font.tickslab = c(16, "bold", "black"),
+           size = 1.5,
+
+           xlab = "Time in months",
+           legend = "top",
+           legend.title = "",
+           pval = TRUE,
+           conf.int = FALSE,
+           # Censor
+           censor = TRUE
+) + guides(colour = guide_legend(ncol = 1))
+```
+</div>
+</div>
+
+
 ### Model 1 - adjust for age, study site, stage, and histotype
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
@@ -490,7 +720,7 @@ coxph(Surv(time = analgesics$os_time,
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous) - I don't have physical activity
+### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat - I don't have physical activity
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
@@ -527,9 +757,9 @@ coxph(Surv(time = analgesics$os_time,
 ### Model 3 - + indication
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
-                              aspirin, aspirin_ind,
-                              nsaid, nsaid_ind, 
-                              aceta, aceta_ind,
+                              aspirin_ind,
+                              nsaid_ind, 
+                              aceta_ind,
                               refage, site_2, stage, 
                               histotype2) %>%
   tbl_uvregression(method = survival::coxph,
@@ -540,7 +770,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + aspirin_ind + nsaid + nsaid_ind + aceta + aceta_ind + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -551,16 +781,78 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + aspirin_ind + nsaid + aceta + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2,
               data = analgesics)  %>%
   cox.zph()
 ```
 
 
-# V. Using a cut point - to come
+# V. Using a cut point
+## Duration cut point
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_duration_cat,
+                              nsaid_duration_cat, 
+                              acetaminophen_duration_cat,
+                              refage, site_2, stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
 
-# VI. Sensitivity analysis adjusting for treatment 
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + histotype2,
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+## Frequency cut point
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_freq_cat,
+                              nsaid_freq_cat, 
+                              acetaminophen_freq_cat,
+                              refage, site_2, stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + histotype2,
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+# VI. Sensitivity analysis - Yes/No - adjusting for treatment 
 
 ### Model 1 + NEW_dblkstat_treat_CA125
 ```{r Sensitivity analysis adjusting for treatment}
@@ -592,7 +884,7 @@ coxph(Surv(time = analgesics$os_time,
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous + need to ask Alicia) - I don't have physical activity + NEW_dblkstat_treat_CA125
+### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat - I don't have physical activity + NEW_dblkstat_treat_CA125
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
@@ -629,9 +921,9 @@ coxph(Surv(time = analgesics$os_time,
 ### Model 3 - + indication + NEW_dblkstat_treat_CA125
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
-                              aspirin, aspirin_ind,
-                              nsaid, nsaid_ind, 
-                              aceta, aceta_ind,
+                              aspirin_ind,
+                              nsaid_ind, 
+                              aceta_ind,
                               refage, site_2, stage, 
                               histotype2, NEW_dblkstat_treat_CA125) %>%
   tbl_uvregression(method = survival::coxph,
@@ -642,7 +934,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + aspirin_ind + nsaid + nsaid_ind + aceta + aceta_ind + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -653,10 +945,279 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + aspirin_ind + nsaid + aceta + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>%
   cox.zph()
 ```
+
+
+# VII. Multiple imputation - HR
+
+## 1. Yes/No
+### Model 1 - adjust for age, study site, imp_stage, and histotype
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site_2, imp_stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>%
+  cox.zph()
+```
+
+### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous) - I don't have physical activity
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site_2, imp_stage, 
+                              histotype2, 
+                              bmicat_2,smokcurrent2, 
+                              CCI_new_Cat) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 +
+                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 +
+                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+              data = analgesics) %>%
+  cox.zph()
+```
+
+### Model 3 - + indication
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_ind,
+                              nsaid_ind, 
+                              aceta_ind,
+                              refage, site_2, imp_stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>%
+  cox.zph()
+```
+
+
+## 2. Using a cut point
+### Duration cut point
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_duration_cat,
+                              nsaid_duration_cat, 
+                              acetaminophen_duration_cat,
+                              refage, site_2, imp_stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + histotype2,
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+### Frequency cut point
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_freq_cat,
+                              nsaid_freq_cat, 
+                              acetaminophen_freq_cat,
+                              refage, site_2, imp_stage, 
+                              histotype2) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + imp_stage + histotype2,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + imp_stage + histotype2,
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+## 3. Adjusting for treatment 
+
+### Model 1 + imp_debulking
+```{r Adjusting for treatment}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site_2, imp_stage, 
+                              histotype2, imp_debulking) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+              data = analgesics)  %>%
+  cox.zph()
+```
+
+### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous + need to ask Alicia) - I don't have physical activity + imp_debulking
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin, nsaid, aceta,
+                              refage, site_2, imp_stage, 
+                              histotype2, imp_debulking,
+                              bmicat_2,smokcurrent2, 
+                              CCI_new_Cat) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking +
+                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking +
+                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+              data = analgesics) %>%
+  cox.zph()
+```
+
+### Model 3 - + indication + imp_debulking
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_ind,
+                              nsaid_ind, 
+                              aceta_ind,
+                              refage, site_2, imp_stage, 
+                              histotype2, imp_debulking) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+              data = analgesics)  %>%
+  cox.zph()
+```
+
+
+
+
+
 
 
 
