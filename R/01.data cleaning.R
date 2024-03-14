@@ -22,7 +22,11 @@ analgesics <- analgesics %>%
               . == 99                                         ~ NA_character_,
               . == 88                                         ~ NA_character_,
               TRUE                                            ~ as.character(.)
-            )) %>% 
+            )
+  ) %>%
+  mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat"),
+            ~ factor(., levels = c("No",
+                                   "Yes"))) %>% 
   mutate_at(c("aspirin_ind", "nsaid_ind", "aceta_ind"), 
             ~ case_when(
               . == 0                                          ~ "No use",
@@ -54,33 +58,99 @@ analgesics <- analgesics %>%
            !is.na(.)                                          ~ .,
            TRUE                                               ~ NA_real_
          ), .names = "{.col}_for_users")) %>% 
+  mutate(aspirin_duration_cat = case_when(
+    aspirin == "No"                                           ~ "Not a user",
+    aspirin_duration <= 60                                    ~ "≤5 months",
+    !is.na(aspirin_duration)                                  ~ ">5 months",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(nsaid_duration_cat = case_when(
+    nsaid == "No"                                             ~ "Not a user",
+    nsaid_duration <= 60                                      ~ "≤5 months",
+    !is.na(nsaid_duration)                                    ~ ">5 months",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(acetaminophen_duration_cat = case_when(
+    aceta == "No"                                             ~ "Not a user",
+    acetaminophen_duration <= 60                              ~ "≤5 months",
+    !is.na(acetaminophen_duration)                            ~ ">5 months",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(across(ends_with("_duration_cat"), ~ factor(., 
+                                                     levels = c(
+                                                       "Not a user", 
+                                                       "≤5 months", 
+                                                       ">5 months"
+                                                     ))
+  )) %>% 
+  mutate(aspirin_freq_cat = case_when(
+    aspirin == "No"                                           ~ "Not a user",
+    aspirin_duration < 30                                     ~ "<30",
+    !is.na(aspirin_duration)                                  ~ "≥30",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(nsaid_freq_cat = case_when(
+    nsaid == "No"                                             ~ "Not a user",
+    nsaid_duration < 30                                       ~ "<30",
+    !is.na(nsaid_duration)                                    ~ "≥30",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(acetaminophen_freq_cat = case_when(
+    aceta == "No"                                             ~ "Not a user",
+    acetaminophen_duration < 30                               ~ "<30",
+    !is.na(acetaminophen_duration)                            ~ "≥30",
+    TRUE                                                      ~ NA_character_
+  )) %>% 
+  mutate(across(ends_with("_freq_cat"), ~ factor(., 
+                                                     levels = c(
+                                                       "Not a user", 
+                                                       "<30", 
+                                                       "≥30"
+                                                     ))
+  )) %>% 
   mutate(aspirin_ind = case_when(
     aspirin == "No"                                           ~ "Not a user",
     aspirin_ind == "To prevent heart disease"                 ~ "Heart disease prevention",
     !is.na(aspirin_ind)                                       ~ "Other uses",
     TRUE                                                      ~ NA_character_
-  ), aspirin_ind = relevel(factor(aspirin_ind), ref = "Not a user")) %>% 
+  ), aspirin_ind = factor(aspirin_ind, levels = c("Not a user",
+                                                  "Heart disease prevention",
+                                                  "Other uses"))
+  ) %>%
   mutate(nsaid_ind = case_when(
     nsaid == "No"                                             ~ "Not a user",
-    !is.na(nsaid_ind)                                         ~ nsaid_ind,
+    nsaid_ind == "Arthritis"                                  ~ "Arthritis",
+    nsaid_ind == "Injury"                                     ~ "Injury",
+    !is.na(nsaid_ind)                                         ~ "Other uses",
     TRUE                                                      ~ NA_character_
-  ), nsaid_ind = relevel(factor(nsaid_ind), ref = "Not a user")) %>% 
+  ), nsaid_ind = factor(nsaid_ind, levels = c("Not a user",
+                                              "Arthritis", "Injury",
+                                              "Other uses"))
+  ) %>%
   mutate(aceta_ind = case_when(
     aceta == "No"                                             ~ "Not a user",
-    !is.na(aceta_ind)                                         ~ aceta_ind,
+    aceta_ind == "Arthritis"                                  ~ "Arthritis",
+    aceta_ind == "Injury"                                     ~ "Injury",
+    !is.na(aceta_ind)                                         ~ "Other uses",
     TRUE                                                      ~ NA_character_
-  ), aceta_ind = relevel(factor(aceta_ind), ref = "Not a user")) %>% 
+  ), aceta_ind = factor(aceta_ind, levels = c("Not a user",
+                                              "Arthritis", "Injury",
+                                              "Other uses"))
+  ) %>%
   mutate(stage = case_when(
     stage == 1                                                ~ "I",
     stage == 2                                                ~ "II",
     stage == 3                                                ~ "III",
     stage == 4                                                ~ "IV",
     stage == 9                                                ~ NA_character_
-  )) %>% 
+  ), stage = factor(stage, levels = c("I", "II", "III", "IV"))
+  ) %>%
   mutate(menopause = case_when(
     menopause == 1                                            ~ "Premenopausal",
     menopause == 2                                            ~ "Postmenopausal"
-  )) %>% 
+  ), menopause = factor(menopause, levels = c("Premenopausal",
+                                              "Postmenopausal"))
+  ) %>%
   mutate(bmicat = case_when(
     bmicat == 1                                               ~ "≤18 kg/m²",
     bmicat == 2                                               ~ ">18 - ≤25 kg/m²",
@@ -119,7 +189,9 @@ analgesics <- analgesics %>%
     smokcurrent == "Never"                                    ~ "Never",
     smokcurrent == "Current" | 
     smokcurrent == "Former"                                   ~ "Ever"
-  )) %>% 
+  ), smokcurrent2 = factor(smokcurrent2, levels = c("Never",
+                                                    "Ever"))
+  ) %>%
   mutate(site_2 = case_when(
     site == "IL" |
     site == "MI"|
@@ -134,7 +206,7 @@ analgesics <- analgesics %>%
     site == "AL" |
     site == "BA" |
     site == "LA"                                              ~ "Southwest",
-  )) %>% 
+  ), site_2 = factor(site_2)) %>% 
   mutate(site = case_when(
     site == "AL"                                              ~ "Alabama",
     site == "BA"                                              ~ "Texas",
@@ -155,12 +227,18 @@ analgesics <- analgesics %>%
   mutate(NEW_dblkstat_treat_CA125 = case_when(
     NEW_dblkstat_treat_CA125 == 1                             ~ "Optimal",
     NEW_dblkstat_treat_CA125 == 2                             ~ "Suboptimal"
-  )) %>% 
+  ), NEW_dblkstat_treat_CA125 = factor(NEW_dblkstat_treat_CA125, 
+                                       levels = c("Suboptimal",
+                                                  "Optimal"))) %>% 
   mutate(CCI_new_Cat = case_when(
     CCI_new_Cat == "CCI=0"                                    ~ "CCI score is 0",
     CCI_new_Cat == "CCI=1"                                    ~ "CCI score is 1",
     CCI_new_Cat == "CCI=2+"                                   ~ "CCI score is 2+"
-  )) %>% 
+  ), CCI_new_Cat = factor(CCI_new_Cat, 
+                          levels = c("CCI score is 0",
+                                     "CCI score is 1",
+                                     "CCI score is 2+"))
+  ) %>% 
   # OS
   mutate(os_event = vital_status_fin) %>% 
   mutate(vital_status_fin = case_when(
@@ -185,11 +263,117 @@ check_data <- function(data){
 
 check_data(analgesics)
 
+# write_rds(analgesics, paste0(here::here(), 
+#                              "/Cleaned analgesics medication data_03132024.rds"))
+# write_csv(analgesics, paste0(path, 
+#                   "/data/processed data/Cleaned analgesics medication data_03132024.csv"))
+# write_rds(analgesics, paste0(path, 
+#                              "/data/processed data/Cleaned analgesics medication data_03132024.rds"))
+
+
+###################################################################### III ### Imputation for debulking
+library(mice)
+library(survival)
+
+mice_data <- analgesics %>% 
+  select(suid, os_time, os_event, 
+         refage, stage, 
+         histotype2, NEW_dblkstat_treat_CA125,
+         bmicat_2,smokcurrent2, menopause,
+         CCI_new_Cat, site_2, 
+         aspirin, 
+         nsaid, 
+         aceta, neoadj_treat) # physical_activity
+
+nonimp_cox_model <-
+  coxph(Surv(time = analgesics$os_time, 
+             event = analgesics$os_event) ~ aspirin + 
+          nsaid + aceta + refage + site_2 + stage + histotype2 + 
+          NEW_dblkstat_treat_CA125 +
+          bmicat_2 + smokcurrent2 + CCI_new_Cat +
+          neoadj_treat,
+        data = mice_data)
+nonimp_cox_model
+
+Hazard <- nelsonaalen(mice_data, os_time, os_event)
+dataset <- data.frame(mice_data, Hazard)
+
+# quick imputation o look at the predictor matrix
+Cox.imp <- mice(dataset, m=1, maxit=0, seed=123, printFlag=F)
+Cox.imp
+Pred <- Cox.imp$predictorMatrix
+# Pred["debulking", "month_at_os_from_treatment"] <- 0
+Pred # Warning all categorical var need to be factors
+
+#  Reading across the rows of the predictor matrix, 
+# 1 means the predictor in that column is included 
+# in the imputation model for that row, 
+# else 0 means it is not included. 
+
+# Patient ids must not be used as predictor. But SURGERYDATE IS NOT.
+Pred[, "suid"] <- 0
+Pred["suid",] <- 0
+Pred
+
+
+# Start imputations using mice
+Cox.imp <- mice(dataset, m=5, maxit=50, 
+                predictorMatrix=Pred,
+                seed=123, printFlag=F)
+check1 <- with(data = Cox.imp,
+               exp = coxph(
+                 Surv(time = analgesics$os_time,
+                      event = analgesics$os_event) ~ aspirin + 
+                   nsaid + aceta + refage + site_2 + stage + histotype2 + 
+                   NEW_dblkstat_treat_CA125 +
+                   bmicat_2 + smokcurrent2 + CCI_new_Cat +
+                   neoadj_treat
+               ))
+# pool(check1)$pooled
+multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
+
+# Do m = `r multiple_imputations_number` (how to choose is explained in
+# https://www.ebpi.uzh.ch/dam/jcr:dc0cef17-29c7-4e61-8d33-e690561ab7ae/mi_intro20191001.pdf depends of the fmi. 
+# The max fmi = `r multiple_imputations_number / 100` that we multiply by 100)
+# Cox.imp <- mice(dataset, m= multiple_imputations_number, maxit=50, 
+#                 predictorMatrix=Pred,
+#                 seed=123, printFlag=F)
+# write_rds(Cox.imp, "Cox.imp_with m number and pred matrix.rds")
+Cox.imp <- read_rds(paste0(here::here(), "/Cox.imp_with m number and pred matrix.rds"))
+
+fit.Cox <-
+  with(data = Cox.imp,
+       exp = coxph(
+         Surv(time = analgesics$os_time,
+              event = analgesics$os_event) ~ aspirin + 
+           nsaid + aceta + refage + site_2 + stage + histotype2 + 
+           NEW_dblkstat_treat_CA125 +
+           bmicat_2 + smokcurrent2 + CCI_new_Cat +
+           neoadj_treat
+       ))
+
+summary(pool(fit.Cox), conf.int = TRUE, exponentiate = TRUE) %>%
+  kableExtra::kable() %>%
+  kableExtra::kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+# Above results are exponentiated (imputed data).  
+# As a reminder before imputation results are :
+nonimp_cox_model
+
+# Complete the chemo data and merge with original
+imputed_data <- complete(Cox.imp, include = FALSE) %>% 
+  rename(imp_stage = stage, imp_debulking = NEW_dblkstat_treat_CA125)
+
+analgesics <- 
+  full_join(analgesics, imputed_data %>% 
+              select(suid, starts_with("imp_")), 
+            by = "suid") 
+
 write_rds(analgesics, paste0(here::here(), 
-                             "/Cleaned analgesics medication data_03062024.rds"))
+                             "/Cleaned imputed analgesics medication data_03132024.rds"))
 write_csv(analgesics, paste0(path, 
-                  "/data/processed data/Cleaned analgesics medication data_03062024.csv"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_03132024.csv"))
 write_rds(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned analgesics medication data_03062024.rds"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_03132024.rds"))
+
 # End
 
