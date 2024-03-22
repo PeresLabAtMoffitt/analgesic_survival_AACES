@@ -53,19 +53,25 @@ theme_gtsummary_compact()
 ```{r load}
 path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
 analgesics <-
-  read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_03132024.rds"))
+  read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_03212024.rds")) %>% 
+  rename(imp_debulking = imp_NEW_dblkstat_treat_CA125)
 ```
 
 ```{r Labeling imputed data}
 var_label(analgesics) <- list(refage = "Patient age", 
                          stage = "Clinical stage", imp_stage = "Clinical stage (imputed)", 
-                         histotype2 = "Histotype", 
-                         BMI_recent = "BMI (recent)", bmicat_2 = "BMI categories", 
-                         menopause = "Menopause", smokcurrent2 = "Smoking status", 
+                         histotype2 = "Histotype", imp_histotype2 = "Histotype (imputed)", 
+                         BMI_recent = "BMI (recent)", BMI_recent_grp = "BMI categories", 
+                         imp_BMI_recent_grp = "BMI categories (imputed)", 
+                         menopause = "Menopause", imp_menopause = "Menopause (imputed)",
+                         smokcurrent2 = "Smoking status", 
+                         paga = "Physical activity", imp_paga = "Physical activity (imputed)",
                          neoadj_treat = "Received neoadjuvant", 
+                         imp_neoadj_treat = "Received neoadjuvant (imputed)", 
                          imp_debulking = "Debulking status (imputed)", 
                          NEW_dblkstat_treat_CA125 = "Debulking status", 
                          CCI_new = "CCI", CCI_new_Cat = "CCI categories",
+                         imp_CCI_new_Cat = "CCI categories (imputed)",
                          aspirin = "Aspirin use",
                          aspirin_duration = "Aspirin duration (months)", 
                          aspirin_duration_cat = "Aspirin duration (cat)",
@@ -96,12 +102,17 @@ var_label(analgesics) <- list(refage = "Patient age",
 # I. Clinical table
 ```{r Clinical table}
 analgesics %>% 
-  select(refage, stage, imp_stage, histotype, histotype2,
-         BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking,
-         CCI_new, CCI_new_Cat) %>% 
+  select(refage, stage, imp_stage, histotype, 
+         histotype2, imp_histotype2, 
+         BMI_recent, imp_BMI_recent_grp,
+         menopause, imp_menopause, smokcurrent2, 
+         neoadj_treat, imp_neoadj_treat, 
+         NEW_dblkstat_treat_CA125, imp_debulking,
+         CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
+         paga, imp_paga) %>% 
   tbl_summary(type = list(
-    neoadj_treat ~ "categorical"),
+    c(neoadj_treat, imp_neoadj_treat,
+      paga, imp_paga) ~ "categorical"),
     statistic=list(all_continuous() ~ "{median} ({min}, {max})"
     )) %>% 
   bold_labels() %>% add_stat_label()
@@ -350,45 +361,63 @@ analgesics %>%
 ## 1. Tables by analgesics
 ```{r}
 analgesics %>% 
-  select(refage, stage, imp_stage, histotype, histotype2,
-         BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
-         CCI_new, CCI_new_Cat,
+  select(refage, stage, imp_stage, histotype, 
+         histotype2, imp_histotype2, 
+         BMI_recent, imp_BMI_recent_grp,
+         menopause, imp_menopause, smokcurrent2, 
+         neoadj_treat, imp_neoadj_treat, 
+         NEW_dblkstat_treat_CA125, imp_debulking,
+         CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
+         paga, imp_paga,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aspirin,
               type = list(
-    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"),
-              statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+    c(aspirin, nsaid, aceta,
+      neoadj_treat, imp_neoadj_treat,
+      paga, imp_paga) ~ "categorical"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
   add_p() %>% bold_p(t = 0.05) %>% 
   modify_caption("**By Aspirin Use** (N = {N})")
 
 analgesics %>% 
-  select(refage, stage, imp_stage, histotype, histotype2,
-         BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
-         CCI_new, CCI_new_Cat,
+  select(refage, stage, imp_stage, histotype, 
+         histotype2, imp_histotype2, 
+         BMI_recent, imp_BMI_recent_grp,
+         menopause, imp_menopause, smokcurrent2, 
+         neoadj_treat, imp_neoadj_treat, 
+         NEW_dblkstat_treat_CA125, imp_debulking,
+         CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
+         paga, imp_paga,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = nsaid,
               type = list(
-    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"),
-              statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+    c(aspirin, nsaid, aceta,
+      neoadj_treat, imp_neoadj_treat,
+      paga, imp_paga) ~ "categorical"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
   add_p() %>% bold_p(t = 0.05) %>% 
   modify_caption("**By NSAID Use** (N = {N})")
 
 analgesics %>% 
-  select(refage, stage, imp_stage, histotype, histotype2,
-         BMI_recent, bmicat_2, menopause, smokcurrent2, 
-         neoadj_treat, NEW_dblkstat_treat_CA125, imp_debulking, 
-         CCI_new, CCI_new_Cat,
+  select(refage, stage, imp_stage, histotype, 
+         histotype2, imp_histotype2, 
+         BMI_recent, imp_BMI_recent_grp,
+         menopause, imp_menopause, smokcurrent2, 
+         neoadj_treat, imp_neoadj_treat, 
+         NEW_dblkstat_treat_CA125, imp_debulking,
+         paga, imp_paga,
+         CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aceta,
               type = list(
-    c(neoadj_treat, aspirin, nsaid, aceta) ~ "categorical"),
-              statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+    c(aspirin, nsaid, aceta,
+      neoadj_treat, imp_neoadj_treat,
+      paga, imp_paga) ~ "categorical"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
   add_p() %>% bold_p(t = 0.05) %>% 
@@ -704,7 +733,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -715,19 +744,19 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>%
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat - I don't have physical activity
+### Model 2 - + BMI_recent_grp, smokcurrent2, CCI_new_Cat + physical activity
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, stage, 
                               histotype2, 
-                              bmicat_2,smokcurrent2, 
-                              CCI_new_Cat) %>%
+                              BMI_recent_grp, smokcurrent2, 
+                              CCI_new_Cat, paga) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -736,8 +765,8 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2) +
+                BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -748,8 +777,8 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2) +
+                BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
               data = analgesics) %>%
   cox.zph()
 ```
@@ -770,7 +799,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -781,7 +810,7 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>%
   cox.zph()
 ```
@@ -804,7 +833,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -815,10 +844,45 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + histotype2,
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + strata(histotype2),
       data = analgesics)  %>%
   cox.zph()
 ```
+
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_duration_cat,
+                              nsaid_duration_cat, 
+                              acetaminophen_duration_cat,
+                              refage, site_2, stage, 
+                              histotype2,
+                              BMI_recent_grp, smokcurrent2, 
+                              CCI_new_Cat, paga) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
+                refage + site_2 + stage + strata(histotype2) + BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + stage + strata(histotype2) + BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
+      data = analgesics)  %>%
+  cox.zph()
+```
+
 
 ## Frequency cut point
 ```{r}
@@ -836,7 +900,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + strata(histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -847,7 +911,42 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + histotype2,
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + stage + strata(histotype2),
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_freq_cat,
+                              nsaid_freq_cat, 
+                              acetaminophen_freq_cat,
+                              refage, site_2, stage, 
+                              histotype2,
+                              BMI_recent_grp, smokcurrent2, 
+                              CCI_new_Cat, paga) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat +
+                refage + site_2 + stage + strata(histotype2) + BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+        refage + site_2 + stage + strata(histotype2) + BMI_recent_grp + smokcurrent2 + CCI_new_Cat + paga,
       data = analgesics)  %>%
   cox.zph()
 ```
@@ -868,7 +967,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2) + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -879,19 +978,19 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + strata(histotype2) + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>%
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat - I don't have physical activity + NEW_dblkstat_treat_CA125
+### Model 2 - + BMI_recent_grp, smokcurrent2, CCI_new_Cat + paga + NEW_dblkstat_treat_CA125
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, stage, 
                               histotype2, NEW_dblkstat_treat_CA125,
-                              bmicat_2,smokcurrent2, 
-                              CCI_new_Cat) %>%
+                              BMI_recent_grp, smokcurrent2, 
+                              CCI_new_Cat, paga) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -900,8 +999,9 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + 
+                histotype2 + paga + NEW_dblkstat_treat_CA125 +
+                BMI_recent_grp + smokcurrent2 + CCI_new_Cat,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -912,8 +1012,9 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + 
+        histotype2 + paga + NEW_dblkstat_treat_CA125 +
+                BMI_recent_grp + smokcurrent2 + CCI_new_Cat,
               data = analgesics) %>%
   cox.zph()
 ```
@@ -934,7 +1035,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + strata(histotype2) + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -945,7 +1046,7 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + histotype2 + NEW_dblkstat_treat_CA125,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + stage + strata(histotype2) + NEW_dblkstat_treat_CA125,
               data = analgesics)  %>%
   cox.zph()
 ```
@@ -954,12 +1055,12 @@ coxph(Surv(time = analgesics$os_time,
 # VII. Multiple imputation - HR
 
 ## 1. Yes/No
-### Model 1 - adjust for age, study site, imp_stage, and histotype
+### Model 1 - adjust for age, study site, imp_stage, and imp_histotype2
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, imp_stage, 
-                              histotype2) %>%
+                              imp_histotype2) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -968,7 +1069,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -979,19 +1080,19 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>%
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous) - I don't have physical activity
+### Model 2 - + imp_BMI_recent_grp, smokcurrent2, imp_CCI_new_Cat + imp_paga
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, imp_stage, 
-                              histotype2, 
-                              bmicat_2,smokcurrent2, 
-                              CCI_new_Cat) %>%
+                              imp_histotype2, 
+                              imp_BMI_recent_grp, smokcurrent2, 
+                              imp_CCI_new_Cat, imp_paga) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1000,8 +1101,9 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                strata(imp_histotype2) +
+                imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1012,8 +1114,8 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2) +
+                imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
               data = analgesics) %>%
   cox.zph()
 ```
@@ -1025,7 +1127,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
                               nsaid_ind, 
                               aceta_ind,
                               refage, site_2, imp_stage, 
-                              histotype2) %>%
+                              imp_histotype2) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1034,7 +1136,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1045,7 +1147,7 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>%
   cox.zph()
 ```
@@ -1059,7 +1161,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
                               nsaid_duration_cat, 
                               acetaminophen_duration_cat,
                               refage, site_2, imp_stage, 
-                              histotype2) %>%
+                              imp_histotype2) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1068,7 +1170,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1079,7 +1181,42 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + histotype2,
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage + site_2 + imp_stage + strata(imp_histotype2),
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_duration_cat,
+                              nsaid_duration_cat, 
+                              acetaminophen_duration_cat,
+                              refage, site_2, imp_stage, 
+                              imp_histotype2,
+                              imp_BMI_recent_grp, smokcurrent2, 
+                              imp_CCI_new_Cat, imp_paga) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+                refage + site_2 + imp_stage + strata(imp_histotype2) + imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + refage +
+        site_2 + imp_stage + strata(imp_histotype2) + imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
       data = analgesics)  %>%
   cox.zph()
 ```
@@ -1091,7 +1228,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
                               nsaid_freq_cat, 
                               acetaminophen_freq_cat,
                               refage, site_2, imp_stage, 
-                              histotype2) %>%
+                              imp_histotype2) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1100,7 +1237,8 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + imp_stage + histotype2,
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+                refage + site_2 + imp_stage + strata(imp_histotype2),
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1111,7 +1249,43 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage + site_2 + imp_stage + histotype2,
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+        refage + site_2 + imp_stage + strata(imp_histotype2),
+      data = analgesics)  %>%
+  cox.zph()
+```
+
+```{r}
+tbl1 <- analgesics %>% select(os_event, os_time,
+                              aspirin_freq_cat,
+                              nsaid_freq_cat, 
+                              acetaminophen_freq_cat,
+                              refage, site_2, imp_stage, 
+                              imp_histotype2,
+                              imp_BMI_recent_grp, smokcurrent2, 
+                              imp_CCI_new_Cat, imp_paga) %>%
+  tbl_uvregression(method = survival::coxph,
+                   y = (Surv(time = analgesics$os_time,
+                             event = analgesics$os_event)),
+                   exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
+
+tbl2 <- coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+                refage + site_2 + imp_stage + strata(imp_histotype2) + imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
+              data = analgesics)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable**"))
+```
+
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+           event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + refage +
+        site_2 + imp_stage + strata(imp_histotype2) + imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
       data = analgesics)  %>%
   cox.zph()
 ```
@@ -1123,7 +1297,7 @@ coxph(Surv(time = analgesics$os_time,
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, imp_stage, 
-                              histotype2, imp_debulking) %>%
+                              imp_histotype2, imp_debulking) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1132,7 +1306,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2) + imp_debulking,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1143,19 +1317,19 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2) + imp_debulking,
               data = analgesics)  %>%
   cox.zph()
 ```
 
-### Model 2 - + bmicat_2, smokcurrent2, CCI_new_Cat (could use continuous + need to ask Alicia) - I don't have physical activity + imp_debulking
+### Model 2 - + imp_BMI_recent_grp, smokcurrent2, imp_CCI_new_Cat + imp_paga + imp_debulking
 ```{r}
 tbl1 <- analgesics %>% select(os_event, os_time,
                               aspirin, nsaid, aceta,
                               refage, site_2, imp_stage, 
-                              histotype2, imp_debulking,
-                              bmicat_2,smokcurrent2, 
-                              CCI_new_Cat) %>%
+                              imp_histotype2, imp_debulking,
+                              imp_BMI_recent_grp, smokcurrent2, 
+                              imp_CCI_new_Cat, imp_paga) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1164,8 +1338,9 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                strata(imp_histotype2) + imp_debulking +
+                imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1176,8 +1351,8 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + histotype2 + imp_debulking +
-                bmicat_2 + smokcurrent2 + CCI_new_Cat,
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + strata(imp_histotype2) + imp_debulking +
+                imp_BMI_recent_grp + smokcurrent2 + imp_CCI_new_Cat + imp_paga,
               data = analgesics) %>%
   cox.zph()
 ```
@@ -1189,7 +1364,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
                               nsaid_ind, 
                               aceta_ind,
                               refage, site_2, imp_stage, 
-                              histotype2, imp_debulking) %>%
+                              imp_histotype2, imp_debulking) %>%
   tbl_uvregression(method = survival::coxph,
                    y = (Surv(time = analgesics$os_time,
                              event = analgesics$os_event)),
@@ -1198,7 +1373,7 @@ tbl1 <- analgesics %>% select(os_event, os_time,
   bold_p(t = .05) %>% add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + strata(imp_histotype2) + imp_debulking,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
@@ -1209,7 +1384,7 @@ tbl_merge(list(tbl1, tbl2), tab_spanner = c("**Univariable**", "**Multivariable*
 PH assumption
 ```{r}
 coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + histotype2 + imp_debulking,
+                   event = analgesics$os_event) ~ aspirin_ind + nsaid_ind + aceta_ind + refage + site_2 + imp_stage + strata(imp_histotype2) + imp_debulking,
               data = analgesics)  %>%
   cox.zph()
 ```
