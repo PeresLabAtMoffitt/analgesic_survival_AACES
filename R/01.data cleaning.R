@@ -108,6 +108,7 @@ analgesics <- analgesics %>%
                                                        "≥30"
                                                      ))
   )) %>% 
+  mutate(aspirin_ind_init = aspirin_ind) %>% 
   mutate(aspirin_ind = case_when(
     aspirin == "No"                                           ~ "Not a user",
     aspirin_ind == "To prevent heart disease"                 ~ "Heart disease prevention",
@@ -117,6 +118,7 @@ analgesics <- analgesics %>%
                                                   "Heart disease prevention",
                                                   "Other uses"))
   ) %>%
+  mutate(nsaid_ind_init = nsaid_ind) %>% 
   mutate(nsaid_ind = case_when(
     nsaid == "No"                                             ~ "Not a user",
     nsaid_ind == "Arthritis"                                  ~ "Arthritis",
@@ -127,6 +129,7 @@ analgesics <- analgesics %>%
                                               "Arthritis", "Injury",
                                               "Other uses"))
   ) %>%
+  mutate(aceta_ind_init = aceta_ind) %>% 
   mutate(aceta_ind = case_when(
     aceta == "No"                                             ~ "Not a user",
     aceta_ind == "Arthritis"                                  ~ "Arthritis",
@@ -292,6 +295,7 @@ analgesics <- analgesics %>%
 library(mice)
 library(survival)
 
+# Create a data with the predictor variables and output variables
 mice_data <- analgesics %>% 
   select(suid, os_time, os_event, 
          refage, stage, 
@@ -303,6 +307,8 @@ mice_data <- analgesics %>%
          aceta, 
          neoadj_treat, paga)
 
+# Run a first model to have baseline estimate 
+# (will compare with them later - imputation shouldn't change estimate)
 nonimp_cox_model <-
   coxph(Surv(time = analgesics$os_time, 
              event = analgesics$os_event) ~ aspirin + 
@@ -313,14 +319,20 @@ nonimp_cox_model <-
         data = mice_data)
 nonimp_cox_model
 
+# For cox proportional hazards regression
+# include two variables related to the survival endpoint in the imputation models, 
+# the Nelson-Aalen estimate of the cumulative hazard (nelsonaalen()) and the event indicator,
+# in the imputation process
 Hazard <- nelsonaalen(mice_data, os_time, os_event)
 dataset <- data.frame(mice_data, Hazard)
 
 # quick imputation o look at the predictor matrix
+# Need to make sure of 1) the method used for imputation and 
+# the variables used or not used as predictors
+# For example, patient ids need to not the used as predictors
 Cox.imp <- mice(dataset, m=1, maxit=0, seed=123, printFlag=F)
 Cox.imp
 Pred <- Cox.imp$predictorMatrix
-# Pred["debulking", "month_at_os_from_treatment"] <- 0
 Pred # Warning all categorical var need to be factors
 
 #  Reading across the rows of the predictor matrix, 
@@ -328,7 +340,7 @@ Pred # Warning all categorical var need to be factors
 # in the imputation model for that row, 
 # else 0 means it is not included. 
 
-# Patient ids must not be used as predictor. But SURGERYDATE IS NOT.
+# Patient ids must not be used as predictor. 
 Pred[, "suid"] <- 0
 Pred["suid",] <- 0
 Pred
@@ -377,7 +389,7 @@ summary(pool(fit.Cox), conf.int = TRUE, exponentiate = TRUE) %>%
 # As a reminder before imputation results are :
 nonimp_cox_model
 
-# Complete the chemo data and merge with original
+# Complete the data and merge with original
 imputed_data <- complete(Cox.imp, include = FALSE) %>% 
   `colnames<-`(paste0("imp_", colnames(.)))
   # rename(imp_stage = stage, imp_debulking = NEW_dblkstat_treat_CA125)
