@@ -5,15 +5,26 @@ library(haven)
 
 ###################################################################### I ### Load data
 path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
-analgesics <-
+# analgesics_phase1 <-
+#   read_sas(paste0(path, 
+#                   "/data/raw data/aaces_analgesics_mar18_24.sas7bdat"))
+
+analgesics_phase2 <-
   read_sas(paste0(path, 
-                  "/data/raw data/aaces_analgesics_mar18_24.sas7bdat"))
+                  "/data/raw data/analgesics_with_phase2.sas7bdat"))
+
+
+######################################################################
+analgesics <- analgesics_phase2 %>% 
+  select(suid, AACES_phase = phase, everything())
+
 
 ###################################################################### II ### Data cleaning
 str(analgesics)
 
 analgesics <- analgesics %>% 
   # Recode drugs variables
+  mutate(across(where(is.character), ~ na_if(., ""))) %>% 
   mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat"), 
             ~ case_when(
               . == 1                                          ~ "Yes",
@@ -27,7 +38,12 @@ analgesics <- analgesics %>%
   mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat"),
             ~ factor(., levels = c("No",
                                    "Yes"))) %>% 
-  mutate_at(c("aspirin_ind", "nsaid_ind", "aceta_ind"), 
+  mutate_at(c("aspirin_ind", "nsaid_ind", "aceta_ind",
+              "aspirin_ind_mult1", "aspirin_ind_mult2",
+              "nsaid_ind_mult1", "nsaid_ind_mult2",
+              "nsaid_ind_mult3", "nsaid_ind_mult4",
+              "aceta_ind_mult1", "aceta_ind_mult2",
+              "aceta_ind_mult3"), 
             ~ case_when(
               . == 0                                          ~ "No use",
               . == 1                                          ~ "Arthritis",
@@ -211,18 +227,19 @@ analgesics <- analgesics %>%
   ) %>%
   mutate(site_2 = case_when(
     site == "IL" |
-    site == "MI"|
-    site == "NJ" |
-    site == "OH"                                              ~ "North",
+      site == "MI"|
+      site == "NJ" |
+      site == "OH"                                            ~ "North",
     
     site == "GA" |
-    site == "NC" |
-    site == "SC" |
-    site == "TN"                                              ~ "Southeast",
+      site == "NC" |
+      site == "SC" |
+      site == "TN"                                            ~ "Southeast",
     
     site == "AL" |
-    site == "BA" |
-    site == "LA"                                              ~ "Southwest",
+      site == "BA" |
+      site == "CA" |
+      site == "LA"                                            ~ "Southwest",
   ), site_2 = factor(site_2)) %>% 
   mutate(site = case_when(
     site == "AL"                                              ~ "Alabama",
@@ -235,7 +252,8 @@ analgesics <- analgesics %>%
     site == "NJ"                                              ~ "New Jersey",
     site == "OH"                                              ~ "Ohio",
     site == "SC"                                              ~ "South Carolina",
-    site == "TN"                                              ~ "Tennessee"
+    site == "TN"                                              ~ "Tennessee",
+    site == "CA"                                              ~ "California"
   )) %>% 
   mutate(dblk_imp = case_when(
     dblk_imp == 1                                             ~ "Optimal",
@@ -368,8 +386,8 @@ multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
 Cox.imp <- mice(dataset, m= multiple_imputations_number, maxit=50,
                 predictorMatrix=Pred,
                 seed=123, printFlag=F)
-write_rds(Cox.imp, "Cox.imp_with m number and pred matrix.rds")
-Cox.imp <- read_rds(paste0(here::here(), "/Cox.imp_with m number and pred matrix.rds"))
+write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1_2.rds")
+Cox.imp <- read_rds(paste0(here::here(), "/Cox.imp_with m number and pred matrix_phase1_2.rds"))
 
 fit.Cox <-
   with(data = Cox.imp,
@@ -400,11 +418,11 @@ analgesics <-
             by = c("suid" = "imp_suid")) 
 
 write_rds(analgesics, paste0(here::here(), 
-                             "/Cleaned imputed analgesics medication data_03212024.rds"))
+                             "/Cleaned imputed analgesics medication data_phase1_2_04032024.rds"))
 write_csv(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_03212024.csv"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_2_04032024.csv"))
 write_rds(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_03212024.rds"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_2_04032024.rds"))
 
 # End
 
