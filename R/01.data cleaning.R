@@ -12,11 +12,18 @@ path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medicatio
 analgesics_phase2 <-
   read_sas(paste0(path, 
                   "/data/raw data/analgesics_with_phase2.sas7bdat"))
-
+new_var <-
+  read_sas(paste0(path, 
+                  "/data/raw data/aaces_analgesics_apr24_24.sas7bdat"))
 
 ######################################################################
 analgesics <- analgesics_phase2 %>% 
-  select(suid, AACES_phase = phase, everything())
+  select(suid, AACES_phase = phase, everything()) %>% 
+  full_join(., new_var %>% 
+              select(suid, 
+                     QV6, num_family, 
+                     ins2, education), 
+            by = "suid")
 
 
 ###################################################################### II ### Data cleaning
@@ -225,6 +232,67 @@ analgesics <- analgesics %>%
   ), paga = factor(paga, levels = c("No",
                                     "Yes"))
   ) %>%
+  mutate(income = case_when(
+    QV6 == 1 |
+    QV6 == 2 ~ "< $25,000",
+    QV6 == 3 |
+    QV6 == 4 ~ "$25,000-$74,999",
+    QV6 == 5 |
+    QV6 == 6 ~ "≥ $75,000"
+  ), income = factor(income, 
+                     levels = c("< $25,000",
+                                "$25,000-$74,999",
+                                "≥ $75,000"))) %>% 
+  mutate(QV6 = case_when(
+    QV6 == 1 ~ "less than $10,000",
+    QV6 == 2 ~ "$10,000-$24,999",
+    QV6 == 3 ~ "$25,000-$49,999",
+    QV6 == 4 ~ "$50,000-$74,999",
+    QV6 == 5 ~ "$75,000-$100,000",
+    QV6 == 6 ~ "More than $100,000"
+  )) %>% 
+  
+  mutate(num_family = as.character(num_family)) %>% 
+  mutate(ins2 = case_when(
+    ins2 == 0 ~ "None",
+    ins2 == 1 ~ "Medicaid",
+    ins2 == 2 ~ "Medicare only",
+    ins2 == 3 ~ "Private & medicare",
+    ins2 == 4 ~ "Private",
+    ins2 == 5 ~ "Other"
+  )) %>% 
+  mutate(insurance = case_when(
+    ins2 == "Private & medicare" |
+    ins2 == "Private"               ~ "Private",
+    ins2 == "Medicare only"         ~ "Medicare only",
+    ins2 == "Medicaid" | 
+      ins2 == "Other"               ~ "Other insurance",
+    ins2 == "None"                  ~ "None"
+  ), insurance = factor(insurance, 
+                        levels = c("None",
+                                   "Medicare only",
+                                   "Private",
+                                   "Other insurance"))) %>% 
+  mutate(education = case_when(
+    education == 1 ~ "high school graduate/GED or less",
+    education == 2 |# ~ "some college",
+    education == 3 |# ~ "college graduate",
+    education == 4 ~ "Others" #"graduate/professional school"
+  ), education = factor(education, 
+                        levels = c("high school graduate/GED or less",
+                                   "Others"))) %>% 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
   mutate(site_2 = case_when(
     site == "IL" |
       site == "MI"|
@@ -307,6 +375,7 @@ check_data(analgesics)
 
 # restrict data to patients with analgesics data
 analgesics <- analgesics %>% 
+  filter(AACES_phase == 1) %>% 
   filter(!is.na(aspirin))
 
 ###################################################################### III ### Imputation for debulking
@@ -320,16 +389,16 @@ mice_data <- analgesics %>%
          histotype2, NEW_dblkstat_treat_CA125,
          BMI_recent_grp, smokcurrent2, menopause,
          CCI_new_Cat, site_2, 
-         aspirin, 
-         nsaid, 
-         aceta, 
-         neoadj_treat, paga)
+         aspirin, nsaid, aceta, 
+         neoadj_treat, paga,
+         insurance, income,
+         education)
 
 # Run a first model to have baseline estimate 
 # (will compare with them later - imputation shouldn't change estimate)
 nonimp_cox_model <-
-  coxph(Surv(time = analgesics$os_time, 
-             event = analgesics$os_event) ~ aspirin + 
+  coxph(Surv(time = mice_data$os_time, 
+             event = mice_data$os_event) ~ aspirin + 
           nsaid + aceta + refage + site_2 + stage + histotype2 + 
           NEW_dblkstat_treat_CA125 +
           BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
@@ -370,12 +439,12 @@ Cox.imp <- mice(dataset, m=5, maxit=50,
                 seed=123, printFlag=F)
 check1 <- with(data = Cox.imp,
                exp = coxph(
-                 Surv(time = analgesics$os_time,
-                      event = analgesics$os_event) ~ aspirin + 
+                 Surv(time = mice_data$os_time,
+                      event = mice_data$os_event) ~ aspirin + 
                    nsaid + aceta + refage + site_2 + stage + histotype2 + 
                    NEW_dblkstat_treat_CA125 +
                    BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-                   neoadj_treat + paga
+                   neoadj_treat + paga + income + insurance + education
                ))
 # pool(check1)$pooled
 multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
@@ -392,8 +461,8 @@ Cox.imp <- read_rds(paste0(here::here(), "/Cox.imp_with m number and pred matrix
 fit.Cox <-
   with(data = Cox.imp,
        exp = coxph(
-         Surv(time = analgesics$os_time,
-              event = analgesics$os_event) ~ aspirin + 
+         Surv(time = mice_data$os_time,
+              event = mice_data$os_event) ~ aspirin + 
            nsaid + aceta + refage + site_2 + stage + histotype2 + 
            NEW_dblkstat_treat_CA125 +
            BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
@@ -413,16 +482,16 @@ imputed_data <- complete(Cox.imp, include = FALSE) %>%
   # rename(imp_stage = stage, imp_debulking = NEW_dblkstat_treat_CA125)
 
 analgesics <- 
-  full_join(analgesics, imputed_data,# %>% 
-              # select(suid, starts_with("imp_")), 
+  full_join(analgesics, imputed_data, #%>% 
+              # select(suid, starts_with("imp_")),
             by = c("suid" = "imp_suid")) 
 
 write_rds(analgesics, paste0(here::here(), 
-                             "/Cleaned imputed analgesics medication data_phase1_2_04032024.rds"))
+                             "/Cleaned imputed analgesics medication data_phase1_04252024.rds"))
 write_csv(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_2_04032024.csv"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_04252024.csv"))
 write_rds(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_2_04032024.rds"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_04252024.rds"))
 
 # End
 
