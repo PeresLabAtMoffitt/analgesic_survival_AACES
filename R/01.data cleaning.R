@@ -264,15 +264,27 @@ analgesics <- analgesics %>%
   mutate(insurance = case_when(
     ins2 == "Private & medicare" |
     ins2 == "Private"               ~ "Private",
-    ins2 == "Medicare only"         ~ "Medicare only",
-    ins2 == "Medicaid" | 
-      ins2 == "Other"               ~ "Other insurance",
-    ins2 == "None"                  ~ "None"
+    # ins2 == "Medicare only"         ~ "Medicare only",
+    # ins2 == "Medicaid" | 
+    #   ins2 == "Other"               ~ "Other insurance",
+    # ins2 == "None"                  ~ "None"
+    TRUE                            ~ ins2
   ), insurance = factor(insurance, 
                         levels = c("None",
-                                   "Medicare only",
+                                   "Medicare only", "Medicaid",
                                    "Private",
-                                   "Other insurance"))) %>% 
+                                   "Other"))) %>% 
+  mutate(insurance_yn = case_when(
+    ins2 == "Private & medicare" |
+      ins2 == "Private"               ~ "Yes",
+    ins2 == "Medicare only"         ~ "Yes",
+    ins2 == "Medicaid" | 
+      ins2 == "Other"               ~ "Yes",
+    ins2 == "None"                  ~ "No"
+  ), insurance_yn = factor(insurance_yn, 
+                        levels = c("No",
+                                   "Yes"))) %>% 
+  
   mutate(education = case_when(
     education == 1 ~ "high school graduate/GED or less",
     education == 2 |# ~ "some college",
@@ -281,17 +293,6 @@ analgesics <- analgesics %>%
   ), education = factor(education, 
                         levels = c("high school graduate/GED or less",
                                    "Others"))) %>% 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
   mutate(site_2 = case_when(
     site == "IL" |
@@ -402,7 +403,7 @@ nonimp_cox_model <-
           nsaid + aceta + refage + site_2 + stage + histotype2 + 
           NEW_dblkstat_treat_CA125 +
           BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-          neoadj_treat + paga,
+          neoadj_treat + paga + insurance + income + education,
         data = mice_data)
 nonimp_cox_model
 
@@ -455,8 +456,11 @@ multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
 Cox.imp <- mice(dataset, m= multiple_imputations_number, maxit=50,
                 predictorMatrix=Pred,
                 seed=123, printFlag=F)
-write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1_2.rds")
-Cox.imp <- read_rds(paste0(here::here(), "/Cox.imp_with m number and pred matrix_phase1_2.rds"))
+write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1 w income insurance_private education.rds")
+Cox.imp <- 
+  read_rds(paste0(
+    here::here(), 
+    "/Cox.imp_with m number and pred matrix_phase1 w income insurance_private education.rds"))
 
 fit.Cox <-
   with(data = Cox.imp,
@@ -466,7 +470,7 @@ fit.Cox <-
            nsaid + aceta + refage + site_2 + stage + histotype2 + 
            NEW_dblkstat_treat_CA125 +
            BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-           neoadj_treat + paga
+           neoadj_treat + paga + income + insurance + education
        ))
 
 summary(pool(fit.Cox), conf.int = TRUE, exponentiate = TRUE) %>%
@@ -487,11 +491,11 @@ analgesics <-
             by = c("suid" = "imp_suid")) 
 
 write_rds(analgesics, paste0(here::here(), 
-                             "/Cleaned imputed analgesics medication data_phase1_04252024.rds"))
+                             "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.rds"))
 write_csv(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_04252024.csv"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.csv"))
 write_rds(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1_04252024.rds"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.rds"))
 
 # End
 
