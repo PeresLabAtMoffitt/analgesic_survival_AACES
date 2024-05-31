@@ -261,6 +261,19 @@ analgesics <- analgesics %>%
     ins2 == 4 ~ "Private",
     ins2 == 5 ~ "Other"
   )) %>% 
+  mutate(private_insurance = case_when(
+    str_detect(ins2, "Private|private")    ~ "Yes",
+    !is.na(ins2)                           ~ "No"
+  )) %>% 
+  mutate(medicare_insurance = case_when(
+    str_detect(ins2, "Medicare|medicare")  ~ "Yes",
+    !is.na(ins2)                           ~ "No"
+  )) %>% 
+  mutate(medicaid_insurance = case_when(
+    str_detect(ins2, "Medicaid")           ~ "Yes",
+    !is.na(ins2)                           ~ "No"
+  )) %>% 
+  
   mutate(insurance = case_when(
     ins2 == "Private & medicare" |
     ins2 == "Private"               ~ "Private",
@@ -281,9 +294,12 @@ analgesics <- analgesics %>%
     ins2 == "Medicaid" | 
       ins2 == "Other"               ~ "Yes",
     ins2 == "None"                  ~ "No"
-  ), insurance_yn = factor(insurance_yn, 
-                        levels = c("No",
-                                   "Yes"))) %>% 
+  )) %>% 
+  mutate(across(c(insurance_yn, private_insurance,
+                  medicare_insurance, medicaid_insurance), 
+                ~ factor(., 
+                         levels = c("No",
+                                    "Yes")))) %>% 
   
   mutate(education = case_when(
     education == 1 ~ "high school graduate/GED or less",
@@ -392,7 +408,8 @@ mice_data <- analgesics %>%
          CCI_new_Cat, site_2, 
          aspirin, nsaid, aceta, 
          neoadj_treat, paga,
-         insurance, income,
+         private_insurance, medicare_insurance,
+         medicaid_insurance, income,
          education)
 
 # Run a first model to have baseline estimate 
@@ -403,7 +420,8 @@ nonimp_cox_model <-
           nsaid + aceta + refage + site_2 + stage + histotype2 + 
           NEW_dblkstat_treat_CA125 +
           BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-          neoadj_treat + paga + insurance + income + education,
+          neoadj_treat + paga + private_insurance + medicare_insurance +
+          medicaid_insurance + income + education,
         data = mice_data)
 nonimp_cox_model
 
@@ -445,7 +463,8 @@ check1 <- with(data = Cox.imp,
                    nsaid + aceta + refage + site_2 + stage + histotype2 + 
                    NEW_dblkstat_treat_CA125 +
                    BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-                   neoadj_treat + paga + income + insurance + education
+                   neoadj_treat + paga + income + private_insurance + 
+                   medicare_insurance + medicaid_insurance + education
                ))
 # pool(check1)$pooled
 multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
@@ -456,11 +475,11 @@ multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
 Cox.imp <- mice(dataset, m= multiple_imputations_number, maxit=50,
                 predictorMatrix=Pred,
                 seed=123, printFlag=F)
-write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1 w income insurance_private education.rds")
+write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1 w income 3insurance education_05302024.rds")
 Cox.imp <- 
   read_rds(paste0(
     here::here(), 
-    "/Cox.imp_with m number and pred matrix_phase1 w income insurance_private education.rds"))
+    "/Cox.imp_with m number and pred matrix_phase1 w income 3insurance education_05302024.rds"))
 
 fit.Cox <-
   with(data = Cox.imp,
@@ -470,7 +489,8 @@ fit.Cox <-
            nsaid + aceta + refage + site_2 + stage + histotype2 + 
            NEW_dblkstat_treat_CA125 +
            BMI_recent_grp + smokcurrent2 + CCI_new_Cat +
-           neoadj_treat + paga + income + insurance + education
+           neoadj_treat + paga + income + private_insurance + 
+           medicare_insurance + medicaid_insurance + education
        ))
 
 summary(pool(fit.Cox), conf.int = TRUE, exponentiate = TRUE) %>%
@@ -491,11 +511,11 @@ analgesics <-
             by = c("suid" = "imp_suid")) 
 
 write_rds(analgesics, paste0(here::here(), 
-                             "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.rds"))
+                             "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05302024.rds"))
 write_csv(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.csv"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05302024.csv"))
 write_rds(analgesics, paste0(path, 
-                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.rds"))
+                             "/data/processed data/Cleaned imputed analgesics medication data_phase1 w income insurance education_05302024.rds"))
 
 # End
 

@@ -53,7 +53,7 @@ theme_gtsummary_compact()
 ```{r load}
 path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
 analgesics <-
-  read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05012024.rds")) %>% 
+  read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05302024.rds")) %>% 
   rename(imp_debulking = imp_NEW_dblkstat_treat_CA125)
 ```
 
@@ -63,8 +63,15 @@ var_label(analgesics) <- list(refage = "Patient age",
                          histotype2 = "Histotype", imp_histotype2 = "Histotype (imputed)", 
                          BMI_recent = "BMI (recent)", BMI_recent_grp = "BMI categories", 
                          imp_BMI_recent_grp = "BMI categories (imputed)", 
-                         insurance = "Insurance", imp_insurance = "Insurance (imputed)",
+                         ins2 = "Insurance",
+                         private_insurance = "Private insurance", 
+                         imp_private_insurance = "Private insurance*", 
+                         medicare_insurance = "Medicare insurance",
+                         imp_medicare_insurance = "Medicare insurance*",
+                         medicaid_insurance = "Medicaid insurance",
+                         imp_medicaid_insurance = "Medicaid insurance*",
                          menopause = "Menopause", imp_menopause = "Menopause (imputed)",
+                         education = "Education", imp_education = "Education (imputed)",
                          smokcurrent2 = "Smoking status", 
                          paga = "Physical activity", imp_paga = "Physical activity (imputed)",
                          neoadj_treat = "Received neoadjuvant", 
@@ -84,10 +91,10 @@ var_label(analgesics) <- list(refage = "Patient age",
                          aspirin_ind = "Aspirin indication",
                          nsaid = "Non-aspirin NSAID use", 
                          nsaid_duration = "Non-aspirin NSAID duration (months)", 
-                         nsaid_duration_cat = "Non-aspirin NSAID duration for users (cat)",
+                         nsaid_duration_cat = "Non-aspirin NSAID duration(cat)",
                          nsaid_duration_for_users = "Non-aspirin NSAID duration for users (months)", 
                          nsaid_freq = "Non-aspirin NSAID frequency (Number of days per month)", 
-                         nsaid_freq_cat = "Non-aspirin NSAID frequency for users (cat)",
+                         nsaid_freq_cat = "Non-aspirin NSAID frequency(cat)",
                          nsaid_freq_for_users = "Non-aspirin NSAID frequency for users (Number of days per month)", 
                          nsaid_ind_init = "Non-aspirin NSAID indication (initial categories)",
                          nsaid_ind = "Non-aspirin NSAID indication",
@@ -115,11 +122,17 @@ analgesics %>%
          CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
          paga, imp_paga,
          income, imp_income, num_family,
-         insurance, imp_insurance, 
+         ins2,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance,
          education, imp_education) %>% 
   tbl_summary(type = list(
     c(neoadj_treat, imp_neoadj_treat,
-      paga, imp_paga) ~ "categorical"),
+      paga, imp_paga,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance) ~ "categorical"),
     statistic=list(all_continuous() ~ "{median} ({min}, {max})"
     )) %>% 
   bold_labels() %>% add_stat_label()
@@ -137,13 +150,19 @@ tbl1 <- analgesics %>%
          CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
          paga, imp_paga,
          income, imp_income, num_family,
-         insurance, imp_insurance, 
+         ins2,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance,
          education, imp_education,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aspirin,
               type = list(
     c(nsaid, aceta,
-      neoadj_treat, imp_neoadj_treat) ~ "categorical"),
+      neoadj_treat, imp_neoadj_treat,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance) ~ "categorical"),
     statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
@@ -159,13 +178,19 @@ tbl2 <- analgesics %>%
          CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
          paga, imp_paga,
          income, imp_income, num_family,
-         insurance, imp_insurance, 
+         ins2,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance,
          education, imp_education,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = nsaid,
               type = list(
     c(aspirin, aceta,
-      neoadj_treat, imp_neoadj_treat) ~ "categorical"),
+      neoadj_treat, imp_neoadj_treat,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance) ~ "categorical"),
     statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
@@ -180,14 +205,20 @@ tbl3 <- analgesics %>%
          NEW_dblkstat_treat_CA125, imp_debulking,
          paga, imp_paga,
          income, imp_income, num_family,
-         insurance, imp_insurance, 
+         ins2,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance,
          education, imp_education,
          CCI_new, CCI_new_Cat, imp_CCI_new_Cat,
          aspirin, nsaid, aceta) %>% 
   tbl_summary(by = aceta,
               type = list(
     c(aspirin, nsaid,
-      neoadj_treat, imp_neoadj_treat) ~ "categorical"),
+      neoadj_treat, imp_neoadj_treat,
+         private_insurance, imp_private_insurance,
+         medicare_insurance, imp_medicare_insurance,
+         medicaid_insurance, imp_medicaid_insurance) ~ "categorical"),
     statistic=list(all_continuous() ~ "{median} ({min}, {max})"
   )) %>% 
   bold_labels() %>% add_stat_label() %>% 
@@ -203,7 +234,8 @@ tbl_merge(list(tbl1, tbl2, tbl3), tab_spanner = c("**By Aspirin Use** (N = {N})"
 # HR - Table 1 - Yes/no users - Imputed data
 
 Model 1 - adjust for age, study site, imputed stage, and imputed histotype   
-Model 2 - = 1 + imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance   
+Model 2 - = 1 + imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance   
 Model 3 - = 2 + imp_debulking   
 ```{r}
 model_1 <- coxph(Surv(time = analgesics$os_time, 
@@ -216,10 +248,11 @@ model_1 <- coxph(Surv(time = analgesics$os_time,
   add_nevent(location = "level") %>% add_n(location = "level")
 
 model_2 <- coxph(Surv(time = analgesics$os_time, 
-                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
-                strata(imp_histotype2) +
-                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance,
-              data = analgesics)  %>% 
+                      event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                   strata(imp_histotype2) +
+                   imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance,
+                 data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -227,7 +260,8 @@ model_2 <- coxph(Surv(time = analgesics$os_time,
 model_3 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2) + 
-                  imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance + 
+                  imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
                   imp_debulking,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
@@ -237,10 +271,35 @@ model_3 <- coxph(Surv(time = analgesics$os_time,
 tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
 ```
 
+PH assumption
+```{r}
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                strata(imp_histotype2),
+              data = analgesics) %>%
+  cox.zph()
+coxph(Surv(time = analgesics$os_time, 
+                      event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                   strata(imp_histotype2) +
+                   imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance,
+                 data = analgesics) %>%
+  cox.zph()
+coxph(Surv(time = analgesics$os_time, 
+                   event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+                strata(imp_histotype2) + 
+                  imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
+                  imp_debulking,
+              data = analgesics) %>%
+  cox.zph()
+```
+
 # HR - Table 2 - cut-points - Imputed data
 
 Model 1 - adjust for age, study site, imputed stage, and imputed histotype   
-Model 2 - = 1 + imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance   
+Model 2 - = 1 + imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance   
 Model 3 - = 2 + imp_debulking   
 ```{r}
 model_1 <- coxph(Surv(time = analgesics$os_time, 
@@ -250,26 +309,73 @@ model_1 <- coxph(Surv(time = analgesics$os_time,
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 model_2 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + strata(imp_histotype2) + 
-                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance,
+                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 model_3 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + strata(imp_histotype2) + 
-                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance + 
+                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
                   imp_debulking,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 tbl_duration <- tbl_merge(list(model_1, model_2, model_3), 
                           tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
@@ -282,26 +388,73 @@ model_1 <- coxph(Surv(time = analgesics$os_time,
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 model_2 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + strata(imp_histotype2) + 
-                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance,
+                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 model_3 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + strata(imp_histotype2) + 
-                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance + 
+                imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
                   imp_debulking,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 
 tbl_frequency <- tbl_merge(list(model_1, model_2, model_3), 
                            tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
@@ -310,6 +463,54 @@ tbl_stack(list(tbl_duration, tbl_frequency),
           group_header = c("Duration cut-points", "Frequency cut-points"))
 
 ```
+
+<!-- # test -->
+<!-- ```{r} -->
+<!-- coxph(Surv(time = analgesics$os_time,  -->
+<!--                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat +  -->
+<!--                 refage + site_2 + imp_stage + strata(imp_histotype2) +  -->
+<!--                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance +  -->
+<!--                   imp_debulking, -->
+<!--               data = analgesics)  %>%  -->
+<!--   tbl_regression(exponentiate = TRUE) %>%  -->
+<!--   bold_p(t = .05) %>%  -->
+<!--   add_nevent(location = "level") %>%  -->
+<!--   add_n(location = "level") -->
+
+<!-- coxph(Surv(time = analgesics$os_time,  -->
+<!--                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat +  -->
+<!--                 refage + site_2 + imp_stage + strata(imp_histotype2) +  -->
+<!--                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance +  -->
+<!--                   imp_debulking, -->
+<!--               data = analgesics)  %>%  -->
+<!--   tbl_regression(exponentiate = TRUE) %>%  -->
+<!--   bold_p(t = .05) %>%  -->
+<!--   add_nevent(location = "level") %>%  -->
+<!--   add_n(location = "level") %>% -->
+<!--   # merge the colums into a single column -->
+<!--   modify_cols_merge( -->
+<!--     pattern = "{stat_nevent} ({stat_n})", -->
+<!--     rows = !is.na(stat_nevent) -->
+<!--   ) %>% -->
+<!--   # update header to event rate -->
+<!--   modify_header(stat_nevent = "**N (Event N)**") %>% -->
+
+<!--   # merge the colums into a single column -->
+<!--   modify_cols_merge( -->
+<!--     pattern = "{estimate} ({ci})", -->
+<!--     rows = !is.na(estimate) -->
+<!--   ) %>% -->
+<!--   # update header to event rate -->
+<!--   modify_header(estimate = "**HR (95% CI)**") -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
 
 # HR - Table S3 - Indication
 
@@ -334,13 +535,30 @@ coxph(Surv(time = indication$os_time,
         refage + site_2 + imp_stage + 
         strata(imp_histotype2)+ 
         # imp_CCI_new_Cat +
-        imp_BMI_recent_grp + imp_insurance + 
+        imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
         imp_debulking,
       data = indication)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>%
+  add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 ```
 
 # HR - Table S4 - complete case model
@@ -348,16 +566,32 @@ coxph(Surv(time = indication$os_time,
 coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + stage + 
                 strata(histotype2) +
-                CCI_new_Cat + BMI_recent_grp + insurance,
+                CCI_new_Cat + BMI_recent_grp + private_insurance + medicare_insurance +
+                   medicaid_insurance,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level")
+  add_nevent(location = "level") %>% add_n(location = "level") %>%
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{stat_nevent} ({stat_n})",
+    rows = !is.na(stat_nevent)
+  ) %>%
+  # update header to event rate
+  modify_header(stat_nevent = "**N (Event N)**") %>%
+  
+  # merge the colums into a single column
+  modify_cols_merge(
+    pattern = "{estimate} ({ci})",
+    rows = !is.na(estimate)
+  ) %>%
+  # update header to event rate
+  modify_header(estimate = "**HR (95% CI)**")
 ```
 
-# Figure - adjusted KM
-A - aspirin  
+# Figure - adjusted KM - with imputed data
+A - Aspirin  
 B - NSAIDs   
 C - Aceta
 ```{r, fig.height=9, fig.width=5}
@@ -367,7 +601,8 @@ fit <-
   coxph(Surv(time = analgesics_data_frame$os_time, 
              event = analgesics_data_frame$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
           strata(imp_histotype2) + 
-          imp_CCI_new_Cat + imp_BMI_recent_grp + imp_insurance + 
+          imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
           imp_debulking,
         data = analgesics_data_frame)
 
@@ -407,6 +642,10 @@ library(patchwork)
 fig1a / fig1b / fig1c +
   plot_annotation(tag_levels = 'A')
 
+ggsave("Figure 1 updated with model including 3 insurances variables.pdf",
+       width = 4,
+       height = 10,
+       dpi = 600)
 ```
 
 
