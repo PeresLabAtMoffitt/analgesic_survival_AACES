@@ -309,22 +309,7 @@ model_1 <- coxph(Surv(time = analgesics$os_time,
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 model_2 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
@@ -334,22 +319,7 @@ model_2 <- coxph(Surv(time = analgesics$os_time,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 model_3 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
@@ -360,22 +330,7 @@ model_3 <- coxph(Surv(time = analgesics$os_time,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl_duration <- tbl_merge(list(model_1, model_2, model_3), 
                           tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
@@ -388,22 +343,7 @@ model_1 <- coxph(Surv(time = analgesics$os_time,
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 model_2 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
@@ -413,22 +353,7 @@ model_2 <- coxph(Surv(time = analgesics$os_time,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 model_3 <- coxph(Surv(time = analgesics$os_time, 
                    event = analgesics$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
@@ -439,22 +364,7 @@ model_3 <- coxph(Surv(time = analgesics$os_time,
               data = analgesics)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 
 tbl_frequency <- tbl_merge(list(model_1, model_2, model_3), 
                            tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
@@ -543,22 +453,7 @@ coxph(Surv(time = indication$os_time,
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>%
-  add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_n(location = "level")
 ```
 
 # HR - Table S4 - complete case model
@@ -572,22 +467,7 @@ coxph(Surv(time = analgesics$os_time,
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
-  add_nevent(location = "level") %>% add_n(location = "level") %>%
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{stat_nevent} ({stat_n})",
-    rows = !is.na(stat_nevent)
-  ) %>%
-  # update header to event rate
-  modify_header(stat_nevent = "**N (Event N)**") %>%
-  
-  # merge the colums into a single column
-  modify_cols_merge(
-    pattern = "{estimate} ({ci})",
-    rows = !is.na(estimate)
-  ) %>%
-  # update header to event rate
-  modify_header(estimate = "**HR (95% CI)**")
+  add_nevent(location = "level") %>% add_n(location = "level")
 ```
 
 # Figure - adjusted KM - with imputed data
@@ -595,7 +475,9 @@ A - Aspirin
 B - NSAIDs   
 C - Aceta
 ```{r, fig.height=9, fig.width=5}
-analgesics_data_frame <- analgesics %>% as.data.frame()
+analgesics_data_frame <- analgesics %>%
+  mutate(os_time = os_time / 30.417) %>% 
+  as.data.frame()
 
 fit <- 
   coxph(Surv(time = analgesics_data_frame$os_time, 
