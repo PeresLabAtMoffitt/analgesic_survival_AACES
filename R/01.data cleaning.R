@@ -12,9 +12,11 @@ path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medicatio
 analgesics_phase2 <-
   read_sas(paste0(path, 
                   "/data/raw data/analgesics_with_phase2.sas7bdat"))
+
 new_var <-
   read_sas(paste0(path, 
-                  "/data/raw data/aaces_analgesics_apr24_24.sas7bdat"))
+                  "/data/raw data/aaces_analgesics_jun21_24.sas7bdat"))
+
 
 ######################################################################
 analgesics <- analgesics_phase2 %>% 
@@ -22,7 +24,8 @@ analgesics <- analgesics_phase2 %>%
   full_join(., new_var %>% 
               select(suid, 
                      QV6, num_family, 
-                     ins2, education), 
+                     ins2, education, 
+                     heart_trouble : wine_cat2), 
             by = "suid")
 
 
@@ -32,7 +35,9 @@ str(analgesics)
 analgesics <- analgesics %>% 
   # Recode drugs variables
   mutate(across(where(is.character), ~ na_if(., ""))) %>% 
-  mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat"), 
+  mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat",
+              "heart_trouble", "kidney_disease", 
+              "liver_problems"), 
             ~ case_when(
               . == 1                                          ~ "Yes",
               . == 2                                          ~ "No",
@@ -42,7 +47,9 @@ analgesics <- analgesics %>%
               TRUE                                            ~ as.character(.)
             )
   ) %>%
-  mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat"),
+  mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat",
+              "heart_trouble", "kidney_disease", 
+              "liver_problems"),
             ~ factor(., levels = c("No",
                                    "Yes"))) %>% 
   mutate_at(c("aspirin_ind", "nsaid_ind", "aceta_ind",
@@ -359,6 +366,50 @@ analgesics <- analgesics %>%
                                      "CCI score is 1",
                                      "CCI score is 2+"))
   ) %>% 
+  mutate_at(c("heart_trouble_age", "kidney_disease_age", 
+              "liver_problems_age"),
+            ~ na_if(., 999)) %>% 
+  mutate_at(c("drinker", "wine_ever", 
+              "beer_ever", "liquor_ever"),
+            ~ case_when(
+    . == 0                                                    ~ "Non-drinker",
+    . == 1                                                    ~ "Drinker",
+  )) %>% 
+  mutate(drinks_cat2 = case_when(
+    drinks_cat2 == 0                                          ~ "Non-drinker",
+    drinks_cat2 == 2                                          ~ "≤1 drink per week",
+    drinks_cat2 == 3                                          ~ ">1-7 drinks per week", 
+    drinks_cat2 == 4                                          ~ ">7 drinks per week"
+  )) %>% 
+  mutate(wine_cat2 = case_when(
+    wine_cat2 == 0                                            ~ "non-wine drinker",
+    wine_cat2 == 1                                            ~ "non-wine drinker but drinks other alcohol",
+    wine_cat2 == 2                                            ~ "≤1 drink of wine per week",
+    wine_cat2 == 3                                            ~ ">1-7 drinks of wine per week ",
+    wine_cat2 == 4                                            ~ ">7 drinks of wine per week",
+  )) %>% 
+  mutate(beer_cat2 = case_when(
+    beer_cat2 == 0                                            ~ "non-beer drinker",
+    beer_cat2 == 1                                            ~ "non-beer drinker but drinks other alcohol",
+    beer_cat2 == 2                                            ~ "≤1 drink of beer per week",
+    beer_cat2 == 3                                            ~ ">1-7 drinks of beer per week ",
+    beer_cat2 == 4                                            ~ ">7 drinks of beer per week"
+  )) %>% 
+  mutate(liquor_cat2 = case_when(
+    liquor_cat2 == 0                                          ~ "non-liquor drinker",
+    liquor_cat2 == 1                                          ~ "non-liquor drinker but drinks other alcohol",
+    liquor_cat2 == 2                                          ~ "≤1 drink of liquor per week",
+    liquor_cat2 == 3                                          ~ ">1-7 drinks of liquor per week ",
+    liquor_cat2 == 4                                          ~ ">7 drinks of liquor per week"
+  )) 
+
+  
+  
+  
+  
+  
+  
+  
   # OS
   mutate(os_event = vital_status_fin) %>% 
   mutate(vital_status_fin = case_when(
@@ -394,6 +445,10 @@ check_data(analgesics)
 analgesics <- analgesics %>% 
   filter(AACES_phase == 1) %>% 
   filter(!is.na(aspirin))
+
+
+write_rds(analgesics, "analgesics data with heart kidney liver var for quick look 06262024.rds")
+
 
 ###################################################################### III ### Imputation for debulking
 library(mice)

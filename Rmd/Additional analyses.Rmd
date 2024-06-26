@@ -660,7 +660,73 @@ tbl_merge(list(model_2, model_3),
 ```
 
 
+# Heart and alchool
+```{r}
+analgesics <-
+  read_rds(paste0(here::here(), "/analgesics data with heart kidney liver var for quick look 06262024.rds"))
+```
 
+```{r}
+analgesics %>% 
+  select(heart_trouble : wine_cat2) %>% 
+  tbl_summary(type = list(
+    c(heart_trouble, kidney_disease,
+      liver_problems) ~ "categorical",
+    c(liver_problems_age) ~ "continuous"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+    )) %>% 
+  bold_labels() %>% add_stat_label()
+```
+
+```{r}
+tbl1 <- analgesics %>% 
+  select(heart_trouble : wine_cat2,
+         aspirin) %>% 
+
+  tbl_summary(by = aspirin,
+              type = list(
+    c(heart_trouble, kidney_disease,
+      liver_problems) ~ "categorical",
+    c(liver_problems_age) ~ "continuous"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05)
+
+tbl2 <- analgesics %>% 
+  select(heart_trouble : wine_cat2,
+         nsaid) %>% 
+
+  tbl_summary(by = nsaid,
+              type = list(
+    c(heart_trouble, kidney_disease,
+      liver_problems) ~ "categorical",
+    c(liver_problems_age) ~ "continuous"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05)
+
+tbl3 <- analgesics %>% 
+  select(heart_trouble : wine_cat2,
+         aceta) %>% 
+
+  tbl_summary(by = aceta,
+              type = list(
+    c(heart_trouble, kidney_disease,
+      liver_problems) ~ "categorical",
+    c(liver_problems_age) ~ "continuous"),
+    statistic=list(all_continuous() ~ "{median} ({min}, {max})"
+  )) %>% 
+  bold_labels() %>% add_stat_label() %>% 
+  add_p() %>% bold_p(t = 0.05)
+```
+
+```{r}
+tbl_merge(list(tbl1, tbl2, tbl3), tab_spanner = c("**By Aspirin Use** (N = {N})",
+                                                  "**By NSAID Use** (N = {N})",
+                                                  "**By Acetaminophen Use** (N = {N})"))
+```
 
 
 
