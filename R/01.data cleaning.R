@@ -17,6 +17,9 @@ new_var <-
   read_sas(paste0(path, 
                   "/data/raw data/aaces_analgesics_jun21_24.sas7bdat"))
 
+new_var2 <-
+  read_csv(paste0(path, 
+                  "/data/raw data/aaces_analgesics_01_13_25.csv"))
 
 ######################################################################
 analgesics <- analgesics_phase2 %>% 
@@ -26,6 +29,10 @@ analgesics <- analgesics_phase2 %>%
                      QV6, num_family, 
                      ins2, education, 
                      heart_trouble : wine_cat2), 
+            by = "suid") %>% 
+  full_join(., new_var2 %>% 
+              select(suid, 
+                     hbp, hbpage), 
             by = "suid")
 
 
@@ -37,7 +44,7 @@ analgesics <- analgesics %>%
   mutate(across(where(is.character), ~ na_if(., ""))) %>% 
   mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat",
               "heart_trouble", "kidney_disease", 
-              "liver_problems"), 
+              "liver_problems", "hbp"), 
             ~ case_when(
               . == 1                                          ~ "Yes",
               . == 2                                          ~ "No",
@@ -49,9 +56,14 @@ analgesics <- analgesics %>%
   ) %>%
   mutate_at(c("aspirin", "nsaid", "aceta", "neoadj_treat",
               "heart_trouble", "kidney_disease", 
-              "liver_problems"),
+              "liver_problems", "hbp"),
             ~ factor(., levels = c("No",
                                    "Yes"))) %>% 
+  mutate(hbpage = case_when(
+    hbpage == 888                     ~ NA_real_,
+    hbpage == 999                     ~ NA_real_,
+    TRUE                              ~ hbpage
+  )) %>% 
   mutate_at(c("aspirin_ind", "nsaid_ind", "aceta_ind",
               "aspirin_ind_mult1", "aspirin_ind_mult2",
               "nsaid_ind_mult1", "nsaid_ind_mult2",
@@ -523,14 +535,14 @@ check1 <- with(data = Cox.imp,
                ))
 # pool(check1)$pooled
 multiple_imputations_number <- round(max(pool(check1)$pooled$fmi),2)*100
-
+write_csv(multiple_imputations_number, "multiple_imputations_number.csv")
 # Do m = `r multiple_imputations_number` (how to choose is explained in
 # https://www.ebpi.uzh.ch/dam/jcr:dc0cef17-29c7-4e61-8d33-e690561ab7ae/mi_intro20191001.pdf depends of the fmi. 
 # The max fmi = `r multiple_imputations_number / 100` that we multiply by 100)
 Cox.imp <- mice(dataset, m= multiple_imputations_number, maxit=50,
                 predictorMatrix=Pred,
                 seed=123, printFlag=F)
-write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1 w income 3insurance education_05302024.rds")
+# write_rds(Cox.imp, "Cox.imp_with m number and pred matrix_phase1 w income 3insurance education_05302024.rds")
 Cox.imp <- 
   read_rds(paste0(
     here::here(), 

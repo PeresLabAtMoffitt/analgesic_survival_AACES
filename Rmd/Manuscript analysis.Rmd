@@ -46,6 +46,8 @@ library(ggforce)
 library(gtsummary)
 library(survminer)
 library(survival)
+library(adjustedCurves)
+library(riskRegression)
 theme_set(theme_classic())
 theme_gtsummary_compact()
 ```
@@ -54,7 +56,8 @@ theme_gtsummary_compact()
 path <- fs::path("", "Volumes", "Peres_Research", "AACES2", "Analgesic medications and survival")
 analgesics <-
   read_rds(paste0(here::here(), "/Cleaned imputed analgesics medication data_phase1 w income insurance education_05302024.rds")) %>% 
-  rename(imp_debulking = imp_NEW_dblkstat_treat_CA125)
+  rename(imp_debulking = imp_NEW_dblkstat_treat_CA125) %>% 
+  mutate(os_years = os_time / 365.25)
 ```
 
 ```{r Labeling imputed data}
@@ -126,7 +129,7 @@ analgesics %>%
          private_insurance, imp_private_insurance,
          medicare_insurance, imp_medicare_insurance,
          medicaid_insurance, imp_medicaid_insurance,
-         education, imp_education) %>% 
+         education, imp_education, os_years, os_event) %>% 
   tbl_summary(type = list(
     c(neoadj_treat, imp_neoadj_treat,
       paga, imp_paga,
@@ -479,6 +482,17 @@ analgesics_data_frame <- analgesics %>%
   mutate(os_time = os_time / 30.417) %>% 
   as.data.frame()
 
+coxph(Surv(time = analgesics_data_frame$os_time, 
+             event = analgesics_data_frame$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+          strata(imp_histotype2) + 
+          imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance + 
+          imp_debulking,
+        data = analgesics_data_frame)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+
 fit <- 
   coxph(Surv(time = analgesics_data_frame$os_time, 
              event = analgesics_data_frame$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
@@ -489,34 +503,35 @@ fit <-
         data = analgesics_data_frame)
 
 
-fig1a <- ggadjustedcurves(fit, data = analgesics_data_frame, 
-                 method = "average", 
+fig1a <-
+  ggadjustedcurves(fit, data = analgesics_data_frame, 
+                 # method = "single",
                  variable = "aspirin",
                  # font.legend = c(16, "black"),
                  legend.title = "",
                  palette = c("blue", "red"),
                  # xlim = c(0, 85)
-                 xlab = "Time (days)",
+                 xlab = "Time (months)",
                  ggtheme = theme_survminer()
                  )
 fig1b <- ggadjustedcurves(fit, data = analgesics_data_frame, 
-                 method = "average", 
+                 # method = "average", 
                  variable = "nsaid",
                  # font.legend = c(16, "black"),
                  legend.title = "",
                  palette = c("blue", "red"),
                  # xlim = c(0, 85)
-                 xlab = "Time (days)",
+                 xlab = "Time (months)",
                  ggtheme = theme_survminer()
                  )
 fig1c <- ggadjustedcurves(fit, data = analgesics_data_frame, 
-                 method = "average", 
+                 # method = "average", 
                  variable = "aceta",
                  # font.legend = c(16, "black"),
                  legend.title = "",
                  palette = c("blue", "red"),
                  # xlim = c(0, 85)
-                 xlab = "Time (days)",
+                 xlab = "Time (months)",
                  ggtheme = theme_survminer()
                  )
 
@@ -524,12 +539,76 @@ library(patchwork)
 fig1a / fig1b / fig1c +
   plot_annotation(tag_levels = 'A')
 
-ggsave("Figure 1 updated with model including 3 insurances variables.pdf",
+ggsave("Figure 1 updated with model including 3 insurances variables_no method_02072025.pdf",
        width = 4,
        height = 10,
        dpi = 600)
 ```
 
+```{r adjustedCurves}
+analgesics_data_frame <- analgesics %>%
+  mutate(os_time = os_time / 30.417)# %>% 
+  # as.data.frame()
+
+outcome_model <- survival::coxph(Surv(os_time, os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+          strata(imp_histotype2) +
+          imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
+                   imp_medicaid_insurance +
+          imp_debulking,
+        data = analgesics_data_frame, x=TRUE)
+
+adjsurv_aspirin <- adjustedsurv(data = analgesics_data_frame,
+                        variable = "aspirin",
+                        ev_time = "os_time",
+                        event = "os_event",
+                        method = "direct",
+                        outcome_model = outcome_model,
+                        conf_int = TRUE)
+
+fig1a <- plot(adjsurv_aspirin, 
+              legend.title = NULL,legend.position = "top",
+              xlab="Time (months)",
+              custom_colors = c("blue", "red"),
+              ylim = c(0,1))
+
+adjsurv_nsaid <- adjustedsurv(data = analgesics_data_frame,
+                        variable = "nsaid",
+                        ev_time = "os_time",
+                        event = "os_event",
+                        method = "direct",
+                        outcome_model = outcome_model,
+                        conf_int = TRUE)
+
+fig1b <- plot(adjsurv_nsaid, 
+              legend.title = NULL,legend.position = "top",
+              xlab="Time (months)",
+              custom_colors = c("blue", "red"),
+              ylim = c(0,1))
+
+adjsurv_aceta <- adjustedsurv(data = analgesics_data_frame,
+                        variable = "aceta",
+                        ev_time = "os_time",
+                        event = "os_event",
+                        method = "direct",
+                        outcome_model = outcome_model,
+                        conf_int = TRUE)
+
+fig1c <- plot(adjsurv_aceta, 
+              legend.title = NULL,legend.position = "top",
+               xlab="Time (months)",
+             custom_colors = c("blue", "red"),
+              ylim = c(0,1))
+
+
+library(patchwork)
+fig1a / fig1b / fig1c +
+  plot_annotation(tag_levels = 'A')
+
+ggsave("Figure 1 using adjustedCurves_02132025.pdf",
+       width = 4,
+       height = 10,
+       dpi = 600)
+```
 
 
 

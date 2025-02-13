@@ -333,6 +333,15 @@ NA
 #                            tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
 ```
 
+
+
+
+
+
+
+
+
+
 # II. HR - Stratified by CCI - Imputed data
 
 ## 1. CCI score is 0
