@@ -17,9 +17,13 @@ new_var <-
   read_sas(paste0(path, 
                   "/data/raw data/aaces_analgesics_jun21_24.sas7bdat"))
 
-new_var2 <-
+# new_var2 <-
+#   read_csv(paste0(path, 
+#                   "/data/raw data/aaces_analgesics_01_13_25.csv"))
+
+new_var3 <-
   read_csv(paste0(path, 
-                  "/data/raw data/aaces_analgesics_01_13_25.csv"))
+                  "/data/raw data/aaces_analgesics_03_05_25.csv"))
 
 ######################################################################
 analgesics <- analgesics_phase2 %>% 
@@ -30,9 +34,9 @@ analgesics <- analgesics_phase2 %>%
                      ins2, education, 
                      heart_trouble : wine_cat2), 
             by = "suid") %>% 
-  full_join(., new_var2 %>% 
+  full_join(., new_var3 %>% 
               select(suid, 
-                     hbp, hbpage), 
+                     hbp : aceta_rec_cat), 
             by = "suid")
 
 
@@ -181,6 +185,16 @@ analgesics <- analgesics %>%
   ), aceta_ind = factor(aceta_ind, levels = c("Not a user",
                                               "Arthritis", "Injury",
                                               "Other uses"))
+  ) %>%
+  mutate_at(c("aspirin_rec_cat",
+             "nsaid_rec_cat",
+             "aceta_rec_cat"), 
+           ~ case_when(
+             . == 0                                          ~ "Never used",
+             . == 1                                          ~ "Used within 3 years",
+             . == 2                                          ~ "Used 3+ years",
+             TRUE                                            ~ as.character(.)
+           )
   ) %>%
   mutate(stage = case_when(
     stage == 1                                                ~ "I",
@@ -413,21 +427,15 @@ analgesics <- analgesics %>%
     liquor_cat2 == 2                                          ~ "≤1 drink of liquor per week",
     liquor_cat2 == 3                                          ~ ">1-7 drinks of liquor per week ",
     liquor_cat2 == 4                                          ~ ">7 drinks of liquor per week"
-  )) 
+  )) %>% 
 
   
-  
-  
-  
-  
-  
-  
   # OS
-  mutate(os_event = vital_status_fin) %>% 
+  mutate(os_event = vital_status_fin) %>%
   mutate(vital_status_fin = case_when(
     vital_status_fin == 0                                     ~ "Alive",
     vital_status_fin == 1                                     ~ "Deceased"
-  )) %>% 
+  )) %>%
   rename(os_time = days_int_to_event)
   
 check_data <- function(data){
@@ -459,7 +467,8 @@ analgesics <- analgesics %>%
   filter(!is.na(aspirin))
 
 
-write_rds(analgesics, "analgesics data with heart kidney liver var for quick look 06262024.rds")
+# write_rds(analgesics, "analgesics data with heart kidney liver var for quick look 06262024.rds")
+write_rds(analgesics, "analgesics data with recency 03062025.rds")
 
 
 ###################################################################### III ### Imputation for debulking

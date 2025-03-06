@@ -114,35 +114,35 @@ var_label(analgesics) <- list(refage = "Patient age",
 
 ## 1. HGSC/carcinosarcoma
 ```{r}
-analgenics_HGSC <- analgesics %>%
+analgesics_HGSC <- analgesics %>%
   filter(imp_histotype2 == "HGSC/carcinosarcoma")
 ```
 
 ### a. Yes/No users
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage,
-              data = analgenics_HGSC)  %>% 
+model_1 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage,
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                      event = analgenics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_2 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                      event = analgesics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                    imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-                 data = analgenics_HGSC)  %>% 
+                 data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_3 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                   imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -152,32 +152,32 @@ tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ c
 
 ### b. cut-points - duration
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
+model_1 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
                 refage + site_2 + imp_stage,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_2 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_3 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -188,32 +188,32 @@ tbl_merge(list(model_1, model_2, model_3),
 
 ### c. cut-points - frequency
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_1 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_2 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_HGSC$os_time, 
-                   event = analgenics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_3 <- coxph(Surv(time = analgesics_HGSC$os_time, 
+                   event = analgesics_HGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_HGSC)  %>% 
+              data = analgesics_HGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -224,35 +224,35 @@ tbl_merge(list(model_1, model_2, model_3),
 
 ## 2. Not HGSC/carcinosarcoma
 ```{r}
-analgenics_notHGSC <- analgesics %>%
+analgesics_notHGSC <- analgesics %>%
   filter(imp_histotype2 == "not HGSC/carcinosarcoma")
 ```
 
 ### a. Yes/No users
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                   event = analgenics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage,
-              data = analgenics_notHGSC)  %>% 
+model_1 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                   event = analgesics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage,
+              data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                      event = analgenics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_2 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                      event = analgesics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                    imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-                 data = analgenics_notHGSC)  %>% 
+                 data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                   event = analgenics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_3 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                   event = analgesics_notHGSC$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                   imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_notHGSC)  %>% 
+              data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -262,32 +262,32 @@ tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ c
 
 ### b. cut-points - duration
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                   event = analgenics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
+model_1 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                   event = analgesics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
                 refage + site_2 + imp_stage,
-              data = analgenics_notHGSC)  %>% 
+              data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                   event = analgenics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_2 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                   event = analgesics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_notHGSC)  %>% 
+              data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-                   event = analgenics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_3 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+                   event = analgesics_notHGSC$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage +
                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_notHGSC)  %>% 
+              data = analgesics_notHGSC)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -299,32 +299,32 @@ tbl_merge(list(model_1, model_2, model_3),
 ### c. cut-points - frequency
 NA
 ```{r}
-# model_1 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-#                    event = analgenics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+# model_1 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+#                    event = analgesics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
 #                 refage + site_2 + imp_stage,
-#               data = analgenics_notHGSC)  %>% 
+#               data = analgesics_notHGSC)  %>% 
 #   tbl_regression(exponentiate = TRUE) %>% 
 #   bold_labels() %>% italicize_levels() %>% 
 #   bold_p(t = .05) %>% 
 #   add_nevent(location = "level") %>% add_n(location = "level")
 # 
-# model_2 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-#                    event = analgenics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+# model_2 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+#                    event = analgesics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
 #                 refage + site_2 + imp_stage +
 #                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
 #                    imp_medicaid_insurance,
-#               data = analgenics_notHGSC)  %>% 
+#               data = analgesics_notHGSC)  %>% 
 #   tbl_regression(exponentiate = TRUE) %>% 
 #   bold_p(t = .05) %>% 
 #   add_nevent(location = "level") %>% add_n(location = "level")
 # 
-# model_3 <- coxph(Surv(time = analgenics_notHGSC$os_time, 
-#                    event = analgenics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+# model_3 <- coxph(Surv(time = analgesics_notHGSC$os_time, 
+#                    event = analgesics_notHGSC$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
 #                 refage + site_2 + imp_stage +
 #                 imp_CCI_new_Cat + imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
 #                    imp_medicaid_insurance + 
 #                   imp_debulking,
-#               data = analgenics_notHGSC)  %>% 
+#               data = analgesics_notHGSC)  %>% 
 #   tbl_regression(exponentiate = TRUE) %>% 
 #   bold_p(t = .05) %>% 
 #   add_nevent(location = "level") %>% add_n(location = "level")
@@ -346,38 +346,38 @@ NA
 
 ## 1. CCI score is 0
 ```{r}
-analgenics_CCI_0 <- analgesics %>%
+analgesics_CCI_0 <- analgesics %>%
   filter(imp_CCI_new_Cat == "CCI score is 0")
 ```
 
 ### a. Yes/No users
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_1 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                      event = analgenics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_2 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                      event = analgesics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2) + 
                    imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-                 data = analgenics_CCI_0)  %>% 
+                 data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_3 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2) + 
                   imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -387,35 +387,35 @@ tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ c
 
 ### b. cut-points - duration
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
+model_1 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_2 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_3 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -426,35 +426,35 @@ tbl_merge(list(model_1, model_2, model_3),
 
 ### c. cut-points - frequency
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_1 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_2 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_0$os_time, 
-                   event = analgenics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_3 <- coxph(Surv(time = analgesics_CCI_0$os_time, 
+                   event = analgesics_CCI_0$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_0)  %>% 
+              data = analgesics_CCI_0)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -465,38 +465,38 @@ tbl_merge(list(model_1, model_2, model_3),
 
 ## 1. CCI score ≥ 1
 ```{r}
-analgenics_CCI_other <- analgesics %>%
+analgesics_CCI_other <- analgesics %>%
   filter(imp_CCI_new_Cat != "CCI score is 0")
 ```
 
 ### a. Yes/No users
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_1 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                      event = analgenics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_2 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                      event = analgesics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2) + 
                    imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-                 data = analgenics_CCI_other)  %>% 
+                 data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
+model_3 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin + nsaid + aceta + refage + site_2 + imp_stage + 
                 strata(imp_histotype2) + 
                   imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -506,35 +506,35 @@ tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ c
 
 ### b. cut-points - duration
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
+model_1 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_2 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
+model_3 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_duration_cat + nsaid_duration_cat + acetaminophen_duration_cat +
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
@@ -545,35 +545,35 @@ tbl_merge(list(model_1, model_2, model_3),
 
 ### c. cut-points - frequency
 ```{r}
-model_1 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_1 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2),
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_labels() %>% italicize_levels() %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_2 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_2 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance,
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
 
-model_3 <- coxph(Surv(time = analgenics_CCI_other$os_time, 
-                   event = analgenics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
+model_3 <- coxph(Surv(time = analgesics_CCI_other$os_time, 
+                   event = analgesics_CCI_other$os_event) ~ aspirin_freq_cat + nsaid_freq_cat + acetaminophen_freq_cat + 
                 refage + site_2 + imp_stage + 
                 strata(imp_histotype2) +
                 imp_BMI_recent_grp + imp_private_insurance + imp_medicare_insurance +
                    imp_medicaid_insurance + 
                   imp_debulking,
-              data = analgenics_CCI_other)  %>% 
+              data = analgesics_CCI_other)  %>% 
   tbl_regression(exponentiate = TRUE) %>% 
   bold_p(t = .05) %>% 
   add_nevent(location = "level") %>% add_n(location = "level")
