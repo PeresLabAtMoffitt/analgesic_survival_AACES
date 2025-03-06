@@ -469,7 +469,6 @@ model_3 <- coxph(Surv(time = analgesics4$os_time,
 tbl_merge(list(model_1, model_2, model_3), tab_spanner = c("**Primary**", "**+ counfounders**", "**Fully adjusted**"))
 ```
 
-
 # Recency of use
 ```{r load recency}
 analgesics <-
@@ -514,6 +513,81 @@ coxph(Surv(time = analgesics$os_time,
   add_nevent(location = "level") %>% add_n(location = "level")
 ```
 
+# Duration x Frequency
+```{r}
+analgesics5 <- analgesics %>% 
+  mutate(duration_freq_asp = case_when(
+    aspirin_duration_cat == "Not a user" & 
+      aspirin_freq_cat == "Not a user"                 ~ "Not a user",
+    aspirin_duration_cat == "≤5 years" & 
+      aspirin_freq_cat == "<30"                        ~ "≤5 years + <30",
+    aspirin_duration_cat == "≤5 years" & 
+      aspirin_freq_cat == "≥30"                        ~ "≤5 years + daily",
+    
+    aspirin_duration_cat == ">5 years" & 
+      aspirin_freq_cat == "<30"                        ~ ">5 years + <30",
+    aspirin_duration_cat == ">5 years" & 
+      aspirin_freq_cat == "≥30"                        ~ ">5 years + daily",
+    TRUE                                               ~ "other"
+  )) %>% 
+  mutate(duration_freq_nsaid = case_when(
+    nsaid_duration_cat == "Not a user" & 
+      nsaid_freq_cat == "Not a user"                   ~ "Not a user",
+    nsaid_duration_cat == "≤5 years" & 
+      nsaid_freq_cat == "<30"                          ~ "≤5 years + <30",
+    nsaid_duration_cat == "≤5 years" & 
+      nsaid_freq_cat == "≥30"                          ~ "≤5 years + daily",
+    
+    nsaid_duration_cat == ">5 years" & 
+      nsaid_freq_cat == "<30"                          ~ ">5 years + <30",
+    nsaid_duration_cat == ">5 years" & 
+      nsaid_freq_cat == "≥30"                          ~ ">5 years + daily",
+    TRUE                                               ~ "other"
+  )) %>% 
+  mutate(duration_freq_aceta = case_when(
+    acetaminophen_duration_cat == "Not a user" & 
+      acetaminophen_freq_cat == "Not a user"           ~ "Not a user",
+    acetaminophen_duration_cat == "≤5 years" & 
+      acetaminophen_freq_cat == "<30"                  ~ "≤5 years + <30",
+    acetaminophen_duration_cat == "≤5 years" & 
+      acetaminophen_freq_cat == "≥30"                  ~ "≤5 years + daily",
+    
+    acetaminophen_duration_cat == ">5 years" & 
+      acetaminophen_freq_cat == "<30"                  ~ ">5 years + <30",
+    acetaminophen_duration_cat == ">5 years" & 
+      acetaminophen_freq_cat == "≥30"                  ~ ">5 years + daily",
+    TRUE                                               ~ "other"
+  )) %>% 
+  mutate(across(starts_with("duration_freq"), ~ relevel(factor(.), 
+                                                     ref = "Not a user"
+                                                     )
+  ))
+  
+```
+
+## Table
+```{r}
+analgesics5 %>% 
+  select(duration_freq_asp : duration_freq_aceta) %>% 
+  tbl_summary() %>% 
+  bold_labels() %>% add_stat_label()
+```
+
+## HR
+```{r}
+coxph(Surv(time = analgesics5$os_time, 
+                   event = analgesics5$os_event) ~ duration_freq_asp + duration_freq_nsaid + duration_freq_aceta +
+                   refage + site_2 + stage + 
+                strata(histotype2) +
+                CCI_new_Cat + BMI_recent_grp + private_insurance + medicare_insurance +
+                   medicaid_insurance + 
+                  NEW_dblkstat_treat_CA125,
+              data = analgesics5)  %>% 
+  tbl_regression(exponentiate = TRUE) %>% 
+  bold_labels() %>% italicize_levels() %>% 
+  bold_p(t = .05) %>% 
+  add_nevent(location = "level") %>% add_n(location = "level")
+```
 
 
 
